@@ -1,0 +1,10 @@
+.vs
+.vscode
+.DS_Store
+**/.DS_Store
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+packages
