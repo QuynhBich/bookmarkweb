@@ -42,15 +42,38 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+// services.AddCors(options =>
+// {
+//     options.AddPolicy(name: "BookmarkWeb",
+//         builder =>
+//         {
+//             builder.WithOrigins("http://localhost:3000")
+//             .AllowAnyHeader()
+//             .AllowAnyMethod()
+//             .AllowCredentials();
+//         });
+// });
 services.AddCors(options =>
 {
-    options.AddPolicy(name: "BookmarkWeb",
+    var allowHostsConfig = builder.Configuration["AllowedHosts"] ?? "";
+    options.AddPolicy("CorsPolicy",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        if (allowHostsConfig.Equals("*"))
+        {
+            builder.SetIsOriginAllowed((origin) => true)
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        }
+        else
+        {
+            var allowHosts = allowHostsConfig.Split(";");
+            builder.WithOrigins(allowHosts)
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        }
         });
 });
 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

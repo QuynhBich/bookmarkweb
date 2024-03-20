@@ -7,7 +7,11 @@ export default defineNuxtConfig({
   experimental: {
     localLayerAliases: true,
   },
-
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:5100',
+    },
+  },
   // app config
   app: {
     // global transition
@@ -55,6 +59,11 @@ export default defineNuxtConfig({
     {
       prefix: 'Awesome',
       path: resolve('./components/awesome'),
+      global: true,
+    },
+    {
+      prefix: 'auth',
+      path: resolve('./components/auth'),
       global: true,
     },
   ],

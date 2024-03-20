@@ -3,7 +3,7 @@ const { awesome } = useAppConfig()
 const { parseMenuRoute, parseMenuTitle } = useNavbarParser()
 const $screen = useAwesomeScreen()
 const nuxtApp = useNuxtApp()
-
+const { authenticated } = storeToRefs(useAuthStore())
 const menus = computed(
   () =>
     (awesome?.layout?.page?.navbar?.menus ||
@@ -12,11 +12,21 @@ const menus = computed(
 
 // drawer
 const showDrawer = ref(false)
+
+const openSignIn = () => {
+  useEventBus('dialog:signIn', true)
+}
+onMounted(() => {
+  console.log(useCookie('authToken').value)
+  if (!useCookie('authToken').value) {
+    openSignIn()
+  }
+})
 </script>
 
 <template>
   <header
-    class="flex fixed backdrop-filter backdrop-blur-md top-0 z-40 w-full flex-none transition-colors duration-300 lg:z-50 border-b border-gray-950/10 dark:border-gray-50/[0.2] bg-white/[0.5] dark:bg-gray-950/[0.5]"
+    class="flex fixed backdrop-filter backdrop-blur-md top-0 z-40 w-full h-16 flex-none transition-colors duration-300 lg:z-50 border-b border-gray-950/10 dark:border-gray-50/[0.2] bg-white/[0.5] dark:bg-gray-950/[0.5]"
   >
     <!-- content -->
     <div
@@ -25,12 +35,12 @@ const showDrawer = ref(false)
       <!-- title -->
       <div>
         <slot name="title">
-          <NuxtLink to="/" class="font-bold text-lg text-primary-500">
+          <NuxtLink to="/" class="font-bold text-lg text-sky-500">
             <Icon
-              name="simple-icons:nuxtdotjs"
-              class="font-black text-xl font-mono mr-2 inline-block"
+              name="fxemoji:anguish"
+              class="font-black text-4xl font-mono mr-2 inline-block"
             />
-            <span class="capitalize">{{ awesome.name }}</span>
+            <span class="capitalize">Quinn.bookmark</span>
           </NuxtLink>
         </slot>
       </div>
@@ -130,9 +140,7 @@ const showDrawer = ref(false)
                         open ? 'font-bold' : '',
                       ]"
                     >
-                      <span>{{
-                        parseMenuTitle(item?.title)
-                      }}</span>
+                      <span>{{ parseMenuTitle(item?.title) }}</span>
                       <Icon
                         name="carbon:chevron-right"
                         class="ml-1"
@@ -167,9 +175,7 @@ const showDrawer = ref(false)
                                   ? 'text-gray-900 dark:text-gray-100 font-bold'
                                   : 'text-gray-700 dark:text-gray-300',
                               ]"
-                              >{{
-                                parseMenuTitle(child?.title)
-                              }}</span
+                              >{{ parseMenuTitle(child?.title) }}</span
                             >
                           </NuxtLink>
                         </template>
@@ -200,4 +206,5 @@ const showDrawer = ref(false)
       </AwesomeActionSheetGroup>
     </AwesomeActionSheet>
   </header>
+  <AuthSignIn />
 </template>
