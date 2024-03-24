@@ -20,5 +20,7 @@ namespace BookmarkWeb.API.Models.Bookmarks.Schemas
         public string? Note { set; get; }
         [JsonProperty("image")]
         public string? Image { set; get; }
+        [JsonProperty("title")]
+        public string? Title { set; get; }
     }
 }

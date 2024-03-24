@@ -42,6 +42,10 @@ namespace BookmarkWeb.API.Database.Entities
         [Column("image")]
         public string? Image { set; get; }
 
+        [StringLength(100)]
+        [Column("title")]
+        public string? Title { set; get; }
+
         public virtual Conversation Conversation { set; get; }
         public virtual User User {set; get;}
         public virtual Folder Folder { set; get; }

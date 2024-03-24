@@ -1,4 +1,5 @@
 using System.Net;
+using BookmarkWeb.API.Database.Entities;
 using BookmarkWeb.API.Models.Bookmarks;
 using BookmarkWeb.API.Models.Bookmarks.Schemas;
 using BookmarkWeb.API.Models.Common.Schemas;
@@ -34,19 +35,16 @@ namespace BookmarkWeb.API.Controllers
         }
 
         [HttpPost("create-bookmark")]
-        [ProducesResponseType(typeof(ResponseInfo), (int)HttpStatusCode.OK)]
         [Authorize]
-        public async Task<IActionResult> CreateNewBookmark(BookmarkCreateModel bookmark)
+        public async Task<ActionResult<BookmarkDto>>  CreateNewBookmark(BookmarkCreateModel bookmark)
         {
-            var response = new ResponseInfo();
             try
             {
-                response = await _bookmarkModel.CreateNewBookmark(bookmark);
-                return Ok(response);
+                var response = await _bookmarkModel.CreateNewBookmark(bookmark);
+                return response;
             }
             catch (Exception e)
             {
-                response.Exception(e);
                 return StatusCode(500, new { Error = e.Message });
             }
         }

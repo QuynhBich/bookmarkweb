@@ -73,7 +73,8 @@ namespace BookmarkWeb.API.Models.Folders
                 result = await _context.Folders.Where(x => x.UserId == user).Select(x => new FolderDto(){
                     Id = x.Id,
                     Description = x.Description,
-                    Name = x.Name
+                    Name = x.Name,
+                    UserId = x.UserId
                 }).ToListAsync();
                 _logger.LogInformation($"[{_className}][{method}] End");
 

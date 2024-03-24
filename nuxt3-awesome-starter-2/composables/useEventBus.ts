@@ -1,9 +1,11 @@
 import mitt from 'mitt'
+import type { Bookmark } from '../types/bookmark'
 
 type ApplicationEvents = {
   // vevent name: payload type
   'dialog:signIn': boolean
   'dialog:signUp': boolean
+  'bookmarks:update': Bookmark
 }
 
 const emitter = mitt<ApplicationEvents>()

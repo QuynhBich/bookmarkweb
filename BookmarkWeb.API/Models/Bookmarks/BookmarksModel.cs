@@ -9,7 +9,7 @@ namespace BookmarkWeb.API.Models.Bookmarks
 {
     public interface IBookmarkModel
     {
-        Task<ResponseInfo> CreateNewBookmark(BookmarkCreateModel data);
+        Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data);
         Task<List<BookmarkDto>> GetListBookmark();
     }
     public class BookmarksModel : BaseModel, IBookmarkModel
@@ -22,18 +22,19 @@ namespace BookmarkWeb.API.Models.Bookmarks
             _className = GetType().Name;
         }
         static string GetActualAsyncMethodName([CallerMemberName] string name = null) => name;
-        public async Task<ResponseInfo> CreateNewBookmark(BookmarkCreateModel data)
+        public async Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data)
         {
             ResponseInfo response = new();
             IDbContextTransaction transaction = null;
             string method = GetActualAsyncMethodName();
+            Bookmark? bookmark;
             try
             {
                 _logger.LogInformation($"[{_className}][{method}] Start");
                 var userId = AppState.Instance.CurrentUser.Id;
                 var newId = Guid.NewGuid();
                 transaction = await _context.Database.BeginTransactionAsync();
-                var bookmark = new Bookmark()
+                bookmark = new Bookmark()
                 {
                     Id = newId,
                     UserId = userId,
@@ -41,7 +42,9 @@ namespace BookmarkWeb.API.Models.Bookmarks
                     Url = data.Url,
                     Image = data.Image,
                     Note = data.Note,
-                    FolderId = data.FolderId
+                    FolderId = data.FolderId,
+                    Description = data.Description,
+                    Title = data.Title
                 };
 
                 _context.Bookmarks.Add(bookmark);
@@ -56,10 +59,17 @@ namespace BookmarkWeb.API.Models.Bookmarks
                 _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
                 response.Exception(e);
 
-                throw;
+                throw new Exception();
             }
 
-            return response;
+            return new BookmarkDto()
+            {
+                Id = bookmark.Id,
+                Url = bookmark.Url,
+                Domain = bookmark.Domain,
+                Image = bookmark.Image,
+                Note = bookmark.Note
+            };
         }
 
         public async Task<List<BookmarkDto>> GetListBookmark()
@@ -77,6 +87,8 @@ namespace BookmarkWeb.API.Models.Bookmarks
                     Image = x.Image,
                     Note = x.Note,
                     CreatedAt = x.CreatedAt,
+                    Title = x.Title,
+                    FolderId = x.FolderId
                 }).OrderByDescending(x => x.CreatedAt).ToListAsync();
                 _logger.LogInformation($"[{_className}][{method}] End");
 

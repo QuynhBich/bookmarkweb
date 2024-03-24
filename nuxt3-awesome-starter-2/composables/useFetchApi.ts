@@ -61,7 +61,6 @@ export const useDeleteApi = async <T>(url: string, options: any = {}) =>
  */
 export const useFetchApi = async <T>(url: string, options: any = {}) => {
   const config = useRuntimeConfig()
-  console.log(config.public.content.api.baseURL)
   const auth = useAuthStore()
   return await useFetch<T>(url, {
     ...options,
@@ -71,7 +70,7 @@ export const useFetchApi = async <T>(url: string, options: any = {}) => {
         : '',
       ...options?.headers,
     },
-    baseURL: config.public.content.api.baseURL,
+    baseURL: config.public.apiBaseUrl,
     async onResponseError({ response }) {
       if (response.status === 401) {
         if (auth.authenticated) {

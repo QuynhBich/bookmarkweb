@@ -22,5 +22,9 @@ namespace BookmarkWeb.API.Models.Bookmarks.Schemas
         public string? Image { set; get; }
         [JsonProperty("createdAt")]
         public DateTimeOffset CreatedAt { set; get; }
+        [JsonProperty("title")]
+        public string? Title { set; get; }
+        [JsonProperty("folderId")]
+        public Guid? FolderId { set; get; }
     }
 }

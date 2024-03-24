@@ -66,6 +66,11 @@ export default defineNuxtConfig({
       path: resolve('./components/auth'),
       global: true,
     },
+    {
+      prefix: 'bookmark',
+      path: resolve('./components/bookmark'),
+      global: true,
+    },
   ],
 
   imports: {
