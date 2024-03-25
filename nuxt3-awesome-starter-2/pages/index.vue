@@ -17,11 +17,32 @@ const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
 })
 if (data.value) listBookmarks.value = data.value
 const { authenticated } = storeToRefs(useAuthStore())
+onNuxtReady(async () => {
+  const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
+    method: 'GET',
+  })
+  if (data.value) listBookmarks.value = data.value
+})
 watch(authenticated, async () => {
   const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
     method: 'GET',
   })
   if (data.value) listBookmarks.value = data.value
+})
+
+// list folder
+const listFolder = ref<Folder[]>()
+onNuxtReady(async () => {
+  const { data: result } = await useFetchApi<Folder[]>(`/folders`, {
+    method: 'GET',
+  })
+  if (result.value) listFolder.value = result.value
+})
+watch(authenticated, async () => {
+  const { data } = await useFetchApi<Folder[]>(`/folders`, {
+    method: 'GET',
+  })
+  if (data.value) listFolder.value = data.value
 })
 
 // preview
@@ -41,6 +62,7 @@ const closePreview = () => {
       class="w-1/6 h-full border-solid border-r-2 border-sky-500 bg-slate-900"
     >
       <BookmarkFolderList
+        :list-folder="listFolder"
         @update:selected-folder="selectedFolder"
       ></BookmarkFolderList>
     </div>

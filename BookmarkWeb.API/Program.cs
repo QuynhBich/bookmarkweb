@@ -61,7 +61,7 @@ services.AddCors(options =>
         {
         if (allowHostsConfig.Equals("*"))
         {
-            builder.SetIsOriginAllowed((origin) => true)
+            builder.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
@@ -87,6 +87,18 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"]!))
+    };
+    options.Events = new JwtBearerEvents {
+        OnMessageReceived = context => {
+            var accessToken = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(accessToken) &&
+                context.Request.Path.StartsWithSegments("/hub"))
+            {
+                    context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+
+        },
     };
 });
 services.AddSwaggerGen(c =>
@@ -155,5 +167,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseCors(Constants.CorsPolicy);
 app.MapControllers();
-app.MapHub<NotificationHub>("/hub/notification");
+var a = app.MapHub<NotificationHub>("/hub/notification");
 app.Run();

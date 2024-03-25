@@ -26,6 +26,7 @@ const bookmarks = ref(props.bookmarks)
 watch(
   () => props.folderId,
   (newValue, oldValue) => {
+    console.log(bookmarks)
     bookmarks.value = props.bookmarks
     bookmarks.value = bookmarks.value.filter(
       (item: Bookmark) => item.folderId === newValue,

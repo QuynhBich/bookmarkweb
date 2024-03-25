@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:5100',
+      apiBaseUrl: process.env.API_BASE_URL || 'https://localhost:5001',
     },
   },
   // app config
@@ -69,6 +69,11 @@ export default defineNuxtConfig({
     {
       prefix: 'bookmark',
       path: resolve('./components/bookmark'),
+      global: true,
+    },
+    {
+      prefix: 'chat',
+      path: resolve('./components/chat'),
       global: true,
     },
   ],

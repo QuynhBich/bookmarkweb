@@ -24,7 +24,6 @@ namespace BookmarkWeb.API.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<string> Demo()
         {
             var result = await _chatService.SummaryFileAsync("abc", "abc");
