@@ -33,8 +33,8 @@ export interface IResetPassword {
 }
 
 export interface IAuthUser {
-  id: string
-  emailaddress: string
+  UserId: string
+  Username: string
   name: string
   surname: string
   fullName: string

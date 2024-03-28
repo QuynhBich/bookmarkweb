@@ -17,7 +17,6 @@ const openSignIn = () => {
   useEventBus('dialog:signIn', true)
 }
 onMounted(() => {
-  console.log(useCookie('authToken').value)
   if (!useCookie('authToken').value) {
     openSignIn()
   }

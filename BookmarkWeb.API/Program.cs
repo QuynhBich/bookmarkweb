@@ -42,40 +42,40 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
-// services.AddCors(options =>
-// {
-//     options.AddPolicy(name: "BookmarkWeb",
-//         builder =>
-//         {
-//             builder.WithOrigins("http://localhost:3000")
-//             .AllowAnyHeader()
-//             .AllowAnyMethod()
-//             .AllowCredentials();
-//         });
-// });
 services.AddCors(options =>
 {
-    var allowHostsConfig = builder.Configuration["AllowedHosts"] ?? "";
-    options.AddPolicy("CorsPolicy",
+    options.AddPolicy(name: "CorsPolicy",
         builder =>
         {
-        if (allowHostsConfig.Equals("*"))
-        {
-            builder.SetIsOriginAllowed((origin) => true)
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        }
-        else
-        {
-            var allowHosts = allowHostsConfig.Split(";");
-            builder.WithOrigins(allowHosts)
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        }
+            builder.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
         });
 });
+// services.AddCors(options =>
+// {
+//     var allowHostsConfig = builder.Configuration["AllowedHosts"] ?? "";
+//     options.AddPolicy("CorsPolicy",
+//         builder =>
+//         {
+//         if (allowHostsConfig.Equals("*"))
+//         {
+//             builder.AllowAnyOrigin()
+//                 .AllowAnyMethod()
+//                 .AllowAnyHeader()
+//                 .AllowCredentials();
+//         }
+//         else
+//         {
+//             var allowHosts = allowHostsConfig.Split(";");
+//             builder.WithOrigins(allowHosts)
+//                 .AllowAnyOrigin()
+//                 .AllowAnyMethod()
+//                 .AllowAnyHeader();
+//         }
+//         });
+// });
 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -87,6 +87,18 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"]!))
+    };
+    options.Events = new JwtBearerEvents {
+        OnMessageReceived = context => {
+            var accessToken = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(accessToken) &&
+                context.Request.Path.StartsWithSegments("/hub"))
+            {
+                    context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+
+        },
     };
 });
 services.AddSwaggerGen(c =>
@@ -152,8 +164,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseCors(Constants.CorsPolicy);
-app.MapControllers();
 app.MapHub<NotificationHub>("/hub/notification");
+app.UseAuthorization();
+app.MapControllers();
 app.Run();

@@ -7,8 +7,7 @@
         class="mb-2 inline-flex items-center text-sm font-semibold text-gray-900 dark:text-neutral-100"
       >
         <img :src="currentBookmark.image" alt="favicon" class="w-4 h-4 m-2" />
-        Facebook
-        <!-- {{ currentBookmark.title }} -->
+        {{ currentBookmark.domain }}
       </div>
       <div class="flex flex-col">
         <span class="text-xs text-gray-900 dark:text-neutral-100">{{
@@ -16,7 +15,7 @@
         }}</span>
         <p class="my-2 break-words text-gray-700 dark:text-neutral-300">
           What is facebook?
-          <!-- {{ bookmark.description }} -->
+          {{ bookmark.description }}
         </p>
         <div class="flex space-x-2"></div>
       </div>

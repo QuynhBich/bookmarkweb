@@ -1,5 +1,6 @@
 using System.Text;
 using BookmarkWeb.API.Hubs;
+using BookmarkWeb.API.Models.Chats;
 using BookmarkWeb.API.Models.Common.Schemas;
 using Microsoft.AspNetCore.SignalR;
 
@@ -14,6 +15,7 @@ namespace BookmarkWeb.API.Services
     {
         private readonly IApiService _apiService;
         private readonly IHubContext<NotificationHub> _notificationHub;
+        private readonly IChatsModel _chatsModel;
         public ChatService(
             IApiService apiService,
             IConfiguration configuration,
@@ -36,7 +38,8 @@ namespace BookmarkWeb.API.Services
 
         private async Task<string> SendMessageAsync(string conversationId, object body, string replyId)
         {
-            var response = await _apiService.PostAsync($"/chat/{conversationId}", body, isStreaming: true);
+            // var response = await _apiService.PostAsync($"/chat/{conversationId}", body, isStreaming: true);
+            var response = await _apiService.PostAsync($"/chat/abc", null, isStreaming: true);
             response.EnsureSuccessStatusCode();
 
             var username = AppState.Instance.CurrentUser.Username;

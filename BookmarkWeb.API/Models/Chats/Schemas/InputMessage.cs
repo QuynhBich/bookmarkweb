@@ -9,5 +9,8 @@ namespace BookmarkWeb.API.Models.Chats.Schemas
 
         [JsonProperty("content")]
         public string Content { set; get; }
+
+        [JsonProperty("isMy")]
+        public bool IsMy { set; get; }
     }
 }

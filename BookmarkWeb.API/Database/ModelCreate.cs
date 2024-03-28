@@ -73,7 +73,7 @@ namespace BookmarkWeb.API.Database
             modelBuilder.Entity<Message>(entity =>
             {
                 entity.HasIndex(e => e.ConversationId);
-                entity.HasIndex(e => e.UserId);
+                entity.Property(e => e.UserId).IsRequired(false);
             });
 
             modelBuilder.Entity<Bookmark>(entity =>

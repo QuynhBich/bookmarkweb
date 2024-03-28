@@ -44,41 +44,26 @@
 <script lang="ts" setup>
 import type { Folder } from '../../../types/folder'
 const emit = defineEmits(['update:selectedFolder'])
-// const props = defineProps({
-//   modelValue: {
-//     type: String,
-//     default: '',
-//   },
-//   items: {
-//     type: Array<Folder>,
-//     default: [],
-//   },
-// })
+const props = defineProps({
+  listFolder: {
+    type: Array<Folder>,
+    default: [],
+  },
+})
 const selectedFolder = ref('')
 const clickFolder = (item: Folder) => {
   selectedFolder.value = item.id
   emit('update:selectedFolder', selectedFolder.value)
 }
-
-const listFolder = ref<Folder[]>()
-const { data } = await useFetchApi<Folder[]>(`/folders`, {
-  method: 'GET',
-})
-if (data.value) listFolder.value = data.value
 const { authenticated } = storeToRefs(useAuthStore())
-watch(authenticated, async () => {
-  const { data } = await useFetchApi<Folder[]>(`/folders`, {
-    method: 'GET',
-  })
-  if (data.value) listFolder.value = data.value
-})
+
 const term = ref('')
 const list = computed(() => {
-  if (term.value.length === 0) {
-    return listFolder.value
+  if (term.value === '') {
+    return props.listFolder
   }
-  if (listFolder.value)
-    return listFolder.value.filter((item: Folder) =>
+  if (props.listFolder)
+    return props.listFolder.filter((item: Folder) =>
       item.name.toLowerCase().includes(term.value.toLowerCase()),
     )
 })

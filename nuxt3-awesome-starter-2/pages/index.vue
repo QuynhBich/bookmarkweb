@@ -16,7 +16,18 @@ const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
   method: 'GET',
 })
 if (data.value) listBookmarks.value = data.value
+const updateListBookmark = async () => {
+  console.log('quynh test')
+  listBookmarks.value = []
+  const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
+    method: 'GET',
+  })
+  if (data.value) listBookmarks.value = data.value
+}
 const { authenticated } = storeToRefs(useAuthStore())
+onNuxtReady(async () => {
+  await updateListBookmark()
+})
 watch(authenticated, async () => {
   const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
     method: 'GET',
@@ -24,10 +35,26 @@ watch(authenticated, async () => {
   if (data.value) listBookmarks.value = data.value
 })
 
+// list folder
+const listFolder = ref<Folder[]>()
+onNuxtReady(async () => {
+  const { data: result } = await useFetchApi<Folder[]>(`/folders`, {
+    method: 'GET',
+  })
+  if (result.value) listFolder.value = result.value
+})
+watch(authenticated, async () => {
+  const { data } = await useFetchApi<Folder[]>(`/folders`, {
+    method: 'GET',
+  })
+  if (data.value) listFolder.value = data.value
+})
+
 // preview
 const drawerVisible = ref(false)
+const selectedBookmark = ref<Bookmark>()
 const showPreview = (val: Bookmark) => {
-  console.log(val)
+  selectedBookmark.value = val
   drawerVisible.value = true
 }
 const closePreview = () => {
@@ -41,6 +68,7 @@ const closePreview = () => {
       class="w-1/6 h-full border-solid border-r-2 border-sky-500 bg-slate-900"
     >
       <BookmarkFolderList
+        :list-folder="listFolder"
         @update:selected-folder="selectedFolder"
       ></BookmarkFolderList>
     </div>
@@ -55,6 +83,7 @@ const closePreview = () => {
         </button>
       </div>
       <BookmarkList
+        v-if="listBookmarks"
         :folder-id="folderId"
         :bookmarks="listBookmarks"
         @preview="showPreview"
@@ -67,7 +96,10 @@ const closePreview = () => {
     @update-dialog-states="openNewBookmarkDialog = !openNewBookmarkDialog"
   ></BookmarkNewItem>
   <BookmarkToolbar
+    v-if="selectedBookmark"
     :drawer-visible="drawerVisible"
+    :bookmark="selectedBookmark"
     @close="closePreview"
+    @update-bookmarks="updateListBookmark"
   ></BookmarkToolbar>
 </template>

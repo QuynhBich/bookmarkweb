@@ -1,5 +1,7 @@
 using System.Net;
 using BookmarkWeb.API.Models.Chats;
+using BookmarkWeb.API.Models.Chats.Schemas;
+using BookmarkWeb.API.Models.Common.Schemas;
 using BookmarkWeb.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +25,52 @@ namespace BookmarkWeb.API.Controllers
             _chatService = chatService;
         }
 
-        [HttpGet]
+        // [HttpGet]
+        // public async Task<string> Demo()
+        // {
+        //     var result = await _chatService.SummaryFileAsync("abc", "abc");
+        //     return result;
+        // }
+
+        [HttpPost("save-message")]
         [Authorize]
-        public async Task<string> Demo()
+        public async Task OnSaveMessage([FromBody]Conversation data)
         {
-            var result = await _chatService.SummaryFileAsync("abc", "abc");
-            return result;
+            ResponseInfo result = new();
+            try {
+                result = await _chatsModel.SaveMessage(data);
+            }
+            catch (Exception e)
+            {
+                result.Exception(e);
+            }
+        }
+
+        [HttpPost("create-new-conversation")]
+        [Authorize]
+        public async Task CreateNewConversation(Conversation data)
+        {
+            ResponseInfo result = new();
+            try {
+                result = await _chatsModel.CreateNewConversation(data);
+            }
+            catch (Exception e)
+            {
+                result.Exception(e);
+            }
+        }
+
+        [HttpGet("get-messages/{conversationId}")]
+        [Authorize]
+        public async Task<IActionResult> GetMessage([FromRoute]string conversationId)
+        {
+            try {
+                return Ok(await _chatsModel.GetMessage(conversationId));
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
         }
     }
 }

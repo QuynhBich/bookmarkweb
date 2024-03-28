@@ -14,8 +14,9 @@ namespace BookmarkWeb.API.Models.Chats
     {
         Task<ResponseInfo> SaveMessage(Schemas.Conversation data);
         Task<ResponseInfo> CreateNewConversation(Schemas.Conversation data);
+        Task<List<InputMessage>> GetMessage(string conversationId);
     }
-    public class ChatsModel : BaseModel,IChatsModel
+    public class ChatsModel : BaseModel, IChatsModel
     {
         private string _className = "";
         private readonly IHubContext<NotificationHub> _notificationHub;
@@ -86,10 +87,31 @@ namespace BookmarkWeb.API.Models.Chats
                 
                 transaction = await _context.Database.BeginTransactionAsync();
                 _ = Guid.TryParse(data.ConversationId, out Guid conversationId);
-                var conversation = await _context.Conversations.FirstOrDefaultAsync(x => x.Id.ToString() == data.ConversationId);
+                _ = Guid.TryParse(data.Bookmark.BookmarkId, out Guid bookmarkId);
+                var conversation = await _context.Conversations.FirstOrDefaultAsync(x => x.BookmarkId.ToString() == data.Bookmark.BookmarkId);
                 if (conversation != null)
                 {
                     conversation.Description = data.Reply.Content.Length > 100 ? $"{data.Reply.Content.Substring(0, 97)}..." : data.Reply.Content;
+                } else {
+                    conversation = new Database.Entities.Conversation()
+                    {
+                        Id = conversationId,
+                        Name = data.Name,
+                        Description = "",
+                        BookmarkId = bookmarkId,
+                        UserId = userId
+                    };
+                    if (data.Name.Length > 50)
+                    {
+                        conversation.Name = data.Name.Substring(0, 50);
+                    }
+
+                    _context.Conversations.Add(conversation);
+                    await _context.SaveChangesAsync();
+
+                    var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(x => x.Id == bookmarkId);
+                    bookmark.ConversationId = conversationId;
+                    await _context.SaveChangesAsync();
                 }
                 if (data.Message is not null)
                 {
@@ -97,7 +119,7 @@ namespace BookmarkWeb.API.Models.Chats
                     _context.Messages.Add(new Message()
                     {
                         Id = messageId,
-                        ConversationId = conversationId,
+                        ConversationId = conversation.Id,
                         Content = data.Message.Content,
                         UserId = userId,
                     });
@@ -107,7 +129,7 @@ namespace BookmarkWeb.API.Models.Chats
                 _context.Messages.Add(new Message()
                 {
                     Id = replyId,
-                    ConversationId = conversationId,
+                    ConversationId = conversation.Id,
                     Content = data.Reply.Content,
                     UserId = null,
                 });
@@ -122,6 +144,29 @@ namespace BookmarkWeb.API.Models.Chats
                 response.Exception(e);
             }
             return response;
+        }
+
+        public async Task<List<InputMessage>> GetMessage(string conversationId)
+        {
+            string method = GetActualAsyncMethodName();
+            try{
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                List<InputMessage> result = new();
+                result = await _context.Messages.Where(x => x.ConversationId.ToString() == conversationId).OrderBy(x => x.CreatedAt)
+                .Select(x => new InputMessage
+                            {
+                                Id = x.Id.ToString(),
+                                Content = x.Content,
+                                IsMy = x.UserId != null
+                            }
+                        ).ToListAsync();
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                throw;
+            }
         }
     }
 }

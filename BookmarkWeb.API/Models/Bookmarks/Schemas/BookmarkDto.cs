@@ -26,5 +26,7 @@ namespace BookmarkWeb.API.Models.Bookmarks.Schemas
         public string? Title { set; get; }
         [JsonProperty("folderId")]
         public Guid? FolderId { set; get; }
+        [JsonProperty("conversationId")]
+        public Guid? ConversationId { set; get; }
     }
 }

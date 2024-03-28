@@ -11,6 +11,7 @@ namespace BookmarkWeb.API.Models.Bookmarks
     {
         Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data);
         Task<List<BookmarkDto>> GetListBookmark();
+        Task<BookmarkDto> GetBookmarkById(string id);
     }
     public class BookmarksModel : BaseModel, IBookmarkModel
     {
@@ -68,8 +69,27 @@ namespace BookmarkWeb.API.Models.Bookmarks
                 Url = bookmark.Url,
                 Domain = bookmark.Domain,
                 Image = bookmark.Image,
-                Note = bookmark.Note
+                Note = bookmark.Note,
+                Description = bookmark.Description
             };
+        }
+
+        public async Task<BookmarkDto> GetBookmarkById(string id)
+        {
+            var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(x => x.Id.ToString() == id);
+            if (bookmark is not null) 
+            {
+                return new BookmarkDto() {
+                    Id = bookmark.Id,
+                    Url = bookmark.Url,
+                    Domain = bookmark.Domain,
+                    Image = bookmark.Image,
+                    Note = bookmark.Note,
+                    Description = bookmark.Description,
+                    ConversationId = bookmark.ConversationId
+                };
+            }
+            throw new Exception("Bookmark not found");
         }
 
         public async Task<List<BookmarkDto>> GetListBookmark()
@@ -88,7 +108,8 @@ namespace BookmarkWeb.API.Models.Bookmarks
                     Note = x.Note,
                     CreatedAt = x.CreatedAt,
                     Title = x.Title,
-                    FolderId = x.FolderId
+                    FolderId = x.FolderId,
+                    ConversationId = x.ConversationId
                 }).OrderByDescending(x => x.CreatedAt).ToListAsync();
                 _logger.LogInformation($"[{_className}][{method}] End");
 

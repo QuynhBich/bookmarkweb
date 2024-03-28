@@ -34,6 +34,21 @@ namespace BookmarkWeb.API.Controllers
             }
         }
 
+        [HttpGet("get-bookmark/{id}")]
+        [ProducesResponseType(typeof(BookmarkDto), (int)HttpStatusCode.OK)]
+        [Authorize]
+        public async Task<IActionResult> GetBookmarkById([FromRoute]string id)
+        {
+            try
+            {
+                return Ok(await _bookmarkModel.GetBookmarkById(id));
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
+
         [HttpPost("create-bookmark")]
         [Authorize]
         public async Task<ActionResult<BookmarkDto>>  CreateNewBookmark(BookmarkCreateModel bookmark)
