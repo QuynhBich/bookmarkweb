@@ -72,5 +72,19 @@ namespace BookmarkWeb.API.Controllers
                 return StatusCode(500, new { Error = e.Message });
             }
         }
+
+        [HttpPost("delete-conversation/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteConversation (string id)
+        {
+            try
+            {
+                return Ok(await _chatsModel.DeleteConversation(id));
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
     }
 }

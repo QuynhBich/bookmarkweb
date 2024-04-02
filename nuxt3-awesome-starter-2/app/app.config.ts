@@ -19,16 +19,17 @@ export default defineAppConfig({
             { type: 'link', title: 'Test', to: { name: 'test' } },
             {
               type: 'dropdown',
-              title: 'Documentations',
+              title: 'Setting',
               children: [
                 {
                   type: 'link',
-                  title: 'Components',
-                  to: { name: 'docs-components' },
+                  title: 'Profile',
+                  to: { name: '' },
                 },
               ],
             },
-            { type: 'button', title: 'Setting', to: { name: 'setting' } },
+            // { type: 'button', title: 'Login', to: { name: '' } },
+            // { type: 'button', title: 'Signup', to: { name: '' } },
             // dynamic title
             // {
             //   type: 'button',

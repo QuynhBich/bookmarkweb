@@ -13,7 +13,7 @@ namespace BookmarkWeb.API.Models.Folders
 {
     public interface IFolderModel
     {
-        Task<ResponseInfo> CreateNewFolder(FolderCreateModel data);
+        Task<FolderDto> CreateNewFolder(FolderCreateModel data);
         Task<List<FolderDto>> GetListFolder();
     }
     public class FoldersModel : BaseModel, IFolderModel
@@ -26,16 +26,16 @@ namespace BookmarkWeb.API.Models.Folders
             _className = GetType().Name;
         }
         static string GetActualAsyncMethodName([CallerMemberName] string name = null) => name;
-        public async Task<ResponseInfo> CreateNewFolder(FolderCreateModel data)
+        public async Task<FolderDto> CreateNewFolder(FolderCreateModel data)
         {
             ResponseInfo response = new();
             IDbContextTransaction transaction = null;
             string method = GetActualAsyncMethodName();
+            var newId = Guid.NewGuid();
             try
             {
                 _logger.LogInformation($"[{_className}][{method}] Start");
                 var userId = AppState.Instance.CurrentUser.Id;
-                var newId = Guid.NewGuid();
                 transaction = await _context.Database.BeginTransactionAsync();
                 var folder = new Folder()
                 {
@@ -60,7 +60,12 @@ namespace BookmarkWeb.API.Models.Folders
                 throw;
             }
 
-            return response;
+            return new FolderDto()
+            {
+                Id = newId,
+                Name = data.Name,
+                Description = data.Description
+            };
         }
 
         public async Task<List<FolderDto>> GetListFolder()

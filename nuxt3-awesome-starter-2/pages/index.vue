@@ -17,7 +17,6 @@ const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
 })
 if (data.value) listBookmarks.value = data.value
 const updateListBookmark = async () => {
-  console.log('quynh test')
   listBookmarks.value = []
   const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
     method: 'GET',
@@ -33,6 +32,9 @@ watch(authenticated, async () => {
     method: 'GET',
   })
   if (data.value) listBookmarks.value = data.value
+})
+useListenBus('bookmarks:update', (val) => {
+  updateListBookmark()
 })
 
 // list folder
@@ -87,6 +89,7 @@ const closePreview = () => {
         :folder-id="folderId"
         :bookmarks="listBookmarks"
         @preview="showPreview"
+        @remove="updateListBookmark"
       ></BookmarkList>
     </div>
   </div>

@@ -63,5 +63,19 @@ namespace BookmarkWeb.API.Controllers
                 return StatusCode(500, new { Error = e.Message });
             }
         }
+
+        [HttpPost("delete-bookmark/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteBookmark (string id)
+        {
+            try
+            {
+                return Ok(await _bookmarkModel.DeleteBookmark(id));
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
     }
 }

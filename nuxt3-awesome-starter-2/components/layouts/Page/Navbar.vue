@@ -4,6 +4,7 @@ const { parseMenuRoute, parseMenuTitle } = useNavbarParser()
 const $screen = useAwesomeScreen()
 const nuxtApp = useNuxtApp()
 const { authenticated } = storeToRefs(useAuthStore())
+const { logUserOut } = useAuthStore()
 const menus = computed(
   () =>
     (awesome?.layout?.page?.navbar?.menus ||
@@ -21,6 +22,10 @@ onMounted(() => {
     openSignIn()
   }
 })
+const logout = () => {
+  logUserOut()
+  window.location.reload()
+}
 </script>
 
 <template>
@@ -204,6 +209,11 @@ onMounted(() => {
         </AwesomeActionSheetItemButton>
       </AwesomeActionSheetGroup>
     </AwesomeActionSheet>
+    <div class="h-full flex justify-center items-center mr-2">
+      <button class="h-1/2 w-20 bg-sky-500 rounded-lg" @click="logout">
+        Logout
+      </button>
+    </div>
   </header>
   <AuthSignIn />
 </template>

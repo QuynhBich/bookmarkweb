@@ -1,17 +1,18 @@
 <template>
-  <div class="grid gap-5 grid-cols-1 p-2 overflow-auto h-full">
+  <div class="flex flex-col gap-5 p-2 overflow-auto h-full">
     <BookmarkItem
       v-for="bookmark in bookmarks"
       :key="bookmark.id"
       :bookmark="bookmark"
       @preview="openPreview"
+      @remove="removeBookmark"
     >
     </BookmarkItem>
   </div>
 </template>
 <script lang="ts" setup>
 import type { Bookmark } from '../../types/bookmark'
-const emit = defineEmits(['preview'])
+const emit = defineEmits(['preview', 'remove'])
 const props = defineProps({
   bookmarks: {
     type: Array<Bookmark>,
@@ -37,5 +38,16 @@ useListenBus('bookmarks:update', (val) => {
 })
 const openPreview = (val: Bookmark) => {
   emit('preview', val)
+}
+
+// delete bookmark
+const removeBookmark = async (id: string) => {
+  const { status } = await usePostApi(`bookmarks/delete-bookmark/${id}`, {
+    server: false,
+  })
+  if (status.value === 'success') {
+    bookmarks.value = bookmarks.value.filter((x) => x.id !== id)
+    emit('remove')
+  }
 }
 </script>

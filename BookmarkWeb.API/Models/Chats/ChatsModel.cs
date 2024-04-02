@@ -15,6 +15,7 @@ namespace BookmarkWeb.API.Models.Chats
         Task<ResponseInfo> SaveMessage(Schemas.Conversation data);
         Task<ResponseInfo> CreateNewConversation(Schemas.Conversation data);
         Task<List<InputMessage>> GetMessage(string conversationId);
+        Task<ResponseInfo> DeleteConversation (string conversationId);
     }
     public class ChatsModel : BaseModel, IChatsModel
     {
@@ -167,6 +168,42 @@ namespace BookmarkWeb.API.Models.Chats
                 _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
                 throw;
             }
+        }
+
+        public async Task<ResponseInfo> DeleteConversation(string conversationId)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                transaction = await _context.Database.BeginTransactionAsync();
+                var conversation = await _context.Conversations.FirstOrDefaultAsync(x => x.Id.ToString() == conversationId);
+                if (conversation is not null)
+                {
+                    var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(x => x.ConversationId.ToString() == conversationId);
+                    if (bookmark is not null)
+                    {
+                        bookmark.ConversationId = null;
+                        _context.Update(bookmark);
+                    }
+                    _context.Conversations.Remove(conversation);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation($"[{_className}][{method}] End");
+                }
+            } catch(Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw;
+            }
+
+            return response;
         }
     }
 }

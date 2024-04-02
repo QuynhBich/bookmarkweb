@@ -6,6 +6,10 @@ namespace BookmarkWeb.API.Database.Entities
 {
     public class Bookmark: Table
     {
+        public Bookmark()
+        {
+            ForceDel = true;
+        }
         /// <summary>
         /// Primary key
         /// </summary>

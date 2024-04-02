@@ -24,61 +24,21 @@
       </div>
       <div class="flex items-center space-x-2">
         <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="inline-flex items-center justify-center rounded-lg border border-gray-500 h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          @click="download()"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            class="h-6 w-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
+          <Icon name="material-symbols:download-2" class="w-5 h-5" />
         </button>
         <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="inline-flex items-center justify-center rounded-lg border border-gray-500 h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            class="h-6 w-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            ></path>
-          </svg>
+          <Icon name="material-symbols:search" class="w-5 h-5" />
         </button>
         <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="inline-flex items-center justify-center rounded-lg border border-gray-500 h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          @click="deleteConversation"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            class="h-6 w-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            ></path>
-          </svg>
+          <Icon name="material-symbols:delete-outline" class="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -86,7 +46,7 @@
       id="messages"
       class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch h-full justify-start"
     >
-      <div class="chat-message">
+      <div class="chat-message gap-4 flex flex-col">
         <ChatMessage
           v-for="mess in messages"
           :key="mess.id"
@@ -212,15 +172,7 @@ watch(
   async (oldValue, newValue) => {
     currentBookmark.value = props.bookmark
     if (!props.bookmark.conversationId) {
-      const { data } = await useGetApi<Bookmark>(
-        `/bookmarks/get-bookmark/${props.bookmark.id}`,
-        {
-          server: false,
-        },
-      )
-      if (data.value) {
-        currentBookmark.value = data.value
-      }
+      await getCurrentBookmark()
     }
     if (currentBookmark.value.conversationId) {
       conversationId.value = currentBookmark.value.conversationId
@@ -231,8 +183,46 @@ watch(
   },
 )
 
-// chat
+const getCurrentBookmark = async () => {
+  const { data } = await useGetApi<Bookmark>(
+    `/bookmarks/get-bookmark/${props.bookmark.id}`,
+    {
+      server: false,
+    },
+  )
+  if (data.value) {
+    currentBookmark.value = data.value
+  }
+}
 
+// download conversation
+const download = () => {
+  const messageText = ref('')
+  if (messages.value.length > 0) {
+    messages.value.forEach((e) => {
+      if (e.isMy) messageText.value += `You: ${e.content}\n\n`
+      else messageText.value += `Quinn.AI: ${e.content}\n\n`
+    })
+  }
+  const a = document.createElement('a')
+  a.href = `data:text/plain,${messageText.value}`
+  a.download = 'file.txt'
+  document.body.appendChild(a)
+  a.click()
+}
+
+// Delete conversation
+const deleteConversation = async () => {
+  const { data, status } = await usePostApi(
+    `chats/delete-conversation/${conversationId.value}`,
+    { server: false },
+  )
+  if (status.value === 'success') {
+    messages.value = []
+    await getCurrentBookmark()
+  }
+}
+// chat
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
 

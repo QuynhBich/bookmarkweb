@@ -9,7 +9,7 @@ namespace BookmarkWeb.API.Services
     public interface IChatService
     {
         public Task<string> SummaryFileAsync(string conversationId, string replyId);
-        public Task<string> SendChatAsync(string conversationId, string question, string replyId, bool isExpanded = false);
+        public Task<string> SendChatAsync(string link, string question, string replyId, bool isExpanded = false);
     }
     public class ChatService : IChatService
     {
@@ -26,20 +26,20 @@ namespace BookmarkWeb.API.Services
             _apiService.Setting(host);
             _notificationHub = notificationHub;
         }
-        public async Task<string> SendChatAsync(string conversationId, string question, string replyId, bool expanded = false)
+        public async Task<string> SendChatAsync(string link, string question, string replyId, bool expanded = false)
         {
-            return await SendMessageAsync(conversationId, new { question, expanded }, replyId);
+            return await SendMessageAsync(new {link, question, expanded }, replyId);
         }
 
         public async Task<string> SummaryFileAsync(string conversationId, string replyId)
         {
-            return await SendMessageAsync(conversationId, null, replyId);
+            return await SendMessageAsync(null, replyId);
         }
 
-        private async Task<string> SendMessageAsync(string conversationId, object body, string replyId)
+        private async Task<string> SendMessageAsync(object? body, string replyId)
         {
             // var response = await _apiService.PostAsync($"/chat/{conversationId}", body, isStreaming: true);
-            var response = await _apiService.PostAsync($"/chat/abc", null, isStreaming: true);
+            var response = await _apiService.PostAsync($"/chat/abc", body, isStreaming: true);
             response.EnsureSuccessStatusCode();
 
             var username = AppState.Instance.CurrentUser.Username;

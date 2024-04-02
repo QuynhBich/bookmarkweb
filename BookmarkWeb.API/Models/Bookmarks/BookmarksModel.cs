@@ -12,6 +12,7 @@ namespace BookmarkWeb.API.Models.Bookmarks
         Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data);
         Task<List<BookmarkDto>> GetListBookmark();
         Task<BookmarkDto> GetBookmarkById(string id);
+        Task<ResponseInfo> DeleteBookmark (string id);
     }
     public class BookmarksModel : BaseModel, IBookmarkModel
     {
@@ -72,6 +73,42 @@ namespace BookmarkWeb.API.Models.Bookmarks
                 Note = bookmark.Note,
                 Description = bookmark.Description
             };
+        }
+
+        public async Task<ResponseInfo> DeleteBookmark(string id)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                transaction = await _context.Database.BeginTransactionAsync();
+                var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(x => x.Id.ToString() == id);
+                if (bookmark is not null)
+                {
+                    var conversation = await _context.Conversations.FirstOrDefaultAsync(x => x.BookmarkId.ToString() == id);
+                    if (conversation is not null)
+                    {
+                        _context.Conversations.Remove(conversation);
+                        await _context.SaveChangesAsync();
+                    }
+                    _context.Bookmarks.Remove(bookmark);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation($"[{_className}][{method}] End");
+                }
+            } catch(Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw;
+            }
+
+            return response;
         }
 
         public async Task<BookmarkDto> GetBookmarkById(string id)

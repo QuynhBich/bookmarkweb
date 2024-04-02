@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 const nuxtApp = useNuxtApp()
 const { parseMenuRoute, parseMenuTitle } = useNavbarParser()
-
+const { authenticated } = storeToRefs(useAuthStore())
 const props = defineProps({
   menu: {
     type: Object as () =>
@@ -42,7 +42,7 @@ const props = defineProps({
       >
     </NuxtLink>
   </template>
-  <template v-else-if="menu?.type === 'button'">
+  <template v-else-if="menu?.type === 'button' && !authenticated">
     <AwesomeButton
       :text="parseMenuTitle(menu?.title)"
       size="xs"

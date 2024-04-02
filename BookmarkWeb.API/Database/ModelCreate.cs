@@ -79,6 +79,10 @@ namespace BookmarkWeb.API.Database
             modelBuilder.Entity<Bookmark>(entity =>
             {
                 entity.Property(e => e.ConversationId).IsRequired(false);
+                entity.HasOne(e => e.Conversation)
+                    .WithOne(e => e.Bookmark)
+                    .HasForeignKey<Conversation>(e => e.BookmarkId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Conversation>(entity =>
@@ -86,7 +90,7 @@ namespace BookmarkWeb.API.Database
                 entity.HasMany(e => e.Messages)
                     .WithOne(e => e.Conversation)
                     .HasForeignKey(e => e.ConversationId)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .OnDelete(DeleteBehavior.Cascade);
                 
                 entity.HasOne(e => e.Bookmark)
                     .WithOne(e => e.Conversation)

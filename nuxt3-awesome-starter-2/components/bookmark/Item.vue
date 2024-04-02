@@ -23,7 +23,7 @@
     <div class="absolute right-2 top-2 invisible group-hover:visible">
       <button
         class="m-1 rounded-full bg-rose-400 p-1.5 text-white shadow-lg transition duration-150 ease-in-out hover:shadow-lg focus:bg-rose-400 focus:shadow-lg focus:ring-0"
-        @click="emit('remove', currentBookmark)"
+        @click="emit('remove', currentBookmark.id)"
       >
         <Icon name="solar:trash-bin-2-bold" class="w-4 h-4" />
       </button>

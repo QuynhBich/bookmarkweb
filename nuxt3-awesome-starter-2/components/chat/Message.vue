@@ -21,7 +21,7 @@
     >
       <div>
         <span
-          class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600"
+          class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600 whitespace-pre-wrap"
           >{{ message.content }}</span
         >
       </div>

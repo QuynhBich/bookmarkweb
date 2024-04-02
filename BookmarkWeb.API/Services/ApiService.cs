@@ -12,7 +12,7 @@ namespace BookmarkWeb.API.Services
     public interface IApiService
     {
         Task<HttpResponseMessage> GetAsync(string path, NameValueCollection query, bool isStreaming = false, string fromClass = "", string fromMethod = "");
-        Task<HttpResponseMessage> PostAsync(string path, object body, bool isStreaming = false, string fromClass = "", string fromMethod = "");
+        Task<HttpResponseMessage> PostAsync(string path, object? body, bool isStreaming = false, string fromClass = "", string fromMethod = "");
         void Setting(string baseUrl);
     }
     public class ApiService : IApiService
@@ -55,7 +55,7 @@ namespace BookmarkWeb.API.Services
             }
         }
 
-        public async Task<HttpResponseMessage> PostAsync(string path, object body, bool isStreaming = false, string fromClass = "", string fromMethod = "")
+        public async Task<HttpResponseMessage> PostAsync(string path, object? body, bool isStreaming = false, string fromClass = "", string fromMethod = "")
         {
             string method = GetActualAsyncMethodName();
             try
@@ -73,7 +73,7 @@ namespace BookmarkWeb.API.Services
         }
 
         private async Task<HttpResponseMessage> CallAPI(string path,
-            NameValueCollection query,
+            NameValueCollection? query,
             bool isStreaming = false,
             string fromClass = "",
             string fromMethod = "",

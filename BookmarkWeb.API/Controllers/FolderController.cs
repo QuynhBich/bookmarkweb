@@ -34,19 +34,16 @@ namespace BookmarkWeb.API.Controllers
         }
 
         [HttpPost("create-folder")]
-        [ProducesResponseType(typeof(ResponseInfo), (int)HttpStatusCode.OK)]
         [Authorize]
-        public async Task<IActionResult> CreateNewFolder(FolderCreateModel folder)
+        public async Task<ActionResult<FolderDto>> CreateNewFolder(FolderCreateModel folder)
         {
-            var response = new ResponseInfo();
             try
             {
-                response = await _folderModel.CreateNewFolder(folder);
+                var response = await _folderModel.CreateNewFolder(folder);
                 return Ok(response);
             }
             catch (Exception e)
             {
-                response.Exception(e);
                 return StatusCode(500, new { Error = e.Message });
             }
         }
