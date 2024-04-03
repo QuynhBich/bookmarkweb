@@ -8,10 +8,13 @@
       @remove="removeBookmark"
     >
     </BookmarkItem>
+    <CommonToats ref="toatsCommon" type="success"></CommonToats>
   </div>
 </template>
 <script lang="ts" setup>
 import type { Bookmark } from '../../types/bookmark'
+import type { CommonToats } from '#build/components'
+const toatsCommon = ref<InstanceType<typeof CommonToats> | null>(null)
 const emit = defineEmits(['preview', 'remove'])
 const props = defineProps({
   bookmarks: {
@@ -27,9 +30,8 @@ const bookmarks = ref(props.bookmarks)
 watch(
   () => props.folderId,
   (newValue, oldValue) => {
-    bookmarks.value = props.bookmarks
-    bookmarks.value = bookmarks.value.filter(
-      (item: Bookmark) => item.folderId === newValue,
+    bookmarks.value = props.bookmarks.filter(
+      (item: Bookmark) => item.folderId === props.folderId,
     )
   },
 )
@@ -47,7 +49,10 @@ const removeBookmark = async (id: string) => {
   })
   if (status.value === 'success') {
     bookmarks.value = bookmarks.value.filter((x) => x.id !== id)
-    emit('remove')
+    toatsCommon.value?.setClose()
+    setTimeout(() => {
+      emit('remove')
+    }, 1000)
   }
 }
 </script>

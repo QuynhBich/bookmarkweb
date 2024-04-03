@@ -14,7 +14,6 @@
           currentBookmark.domain
         }}</span>
         <p class="my-2 break-words text-gray-700 dark:text-neutral-300">
-          What is facebook?
           {{ bookmark.description }}
         </p>
         <div class="flex space-x-2"></div>

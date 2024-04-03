@@ -86,6 +86,7 @@
       </div>
     </div>
   </div>
+  <CommonToats ref="toatsCommon" type="success"></CommonToats>
 </template>
 
 <script lang="ts" setup>
@@ -98,6 +99,7 @@ import {
   type InputUser,
 } from '../../types/conversation'
 import type { Bookmark } from '../../types/bookmark'
+import type { CommonToats } from '#build/components'
 const props = defineProps({
   drawerVisible: {
     type: Boolean,
@@ -212,6 +214,7 @@ const download = () => {
 }
 
 // Delete conversation
+const toatsCommon = ref<InstanceType<typeof CommonToats> | null>(null)
 const deleteConversation = async () => {
   const { data, status } = await usePostApi(
     `chats/delete-conversation/${conversationId.value}`,
@@ -219,7 +222,10 @@ const deleteConversation = async () => {
   )
   if (status.value === 'success') {
     messages.value = []
-    await getCurrentBookmark()
+    toatsCommon.value?.setClose()
+    setTimeout(async () => {
+      await getCurrentBookmark()
+    }, 100)
   }
 }
 // chat
@@ -277,7 +283,7 @@ const onSaveMessage = async (mess: Conversation) => {
   const data = await usePostApi(`/chats/save-message`, JSON.stringify(mess), {
     server: false,
   })
-  if (!props.bookmark.conversationId) {
+  if (!conversationId.value) {
     emit('updateListBookmark')
   }
 }

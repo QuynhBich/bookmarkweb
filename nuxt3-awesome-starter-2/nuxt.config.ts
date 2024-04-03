@@ -76,6 +76,11 @@ export default defineNuxtConfig({
       path: resolve('./components/chat'),
       global: true,
     },
+    {
+      prefix: 'common',
+      path: resolve('./components/common'),
+      global: true,
+    },
   ],
 
   imports: {

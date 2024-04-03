@@ -51,7 +51,7 @@
 </template>
 <script lang="ts" setup>
 import type { Folder } from '../../../types/folder'
-const emit = defineEmits(['update:selectedFolder'])
+const emit = defineEmits(['updateSelectedFolder'])
 const props = defineProps({
   listFolder: {
     type: Array<Folder>,
@@ -61,7 +61,7 @@ const props = defineProps({
 const selectedFolder = ref('')
 const clickFolder = (item: Folder) => {
   selectedFolder.value = item.id
-  emit('update:selectedFolder', selectedFolder.value)
+  emit('updateSelectedFolder', selectedFolder.value)
 }
 const { authenticated } = storeToRefs(useAuthStore())
 
@@ -75,16 +75,13 @@ const list = computed(() => {
       item.name.toLowerCase().includes(term.value.toLowerCase()),
     )
 })
-
-if (
-  selectedFolder.value === '' &&
-  list.value &&
-  list.value.length > 0 &&
-  list.value[0].id
-) {
-  selectedFolder.value = list.value[0].id
-  emit('update:selectedFolder', selectedFolder.value)
-}
+onMounted(() => {
+  if (!selectedFolder.value) {
+    selectedFolder.value = props.listFolder[0]?.id
+    emit('updateSelectedFolder', selectedFolder.value)
+    console.log(selectedFolder.value)
+  }
+})
 
 // Create new folder
 const isOpenDialog = ref(false)

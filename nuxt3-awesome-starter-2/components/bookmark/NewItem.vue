@@ -68,7 +68,7 @@ const emits = defineEmits(['updateDialogStates'])
 const createNewBookmark = async () => {
   const formData: FormData = new FormData()
   formData.append('url', link.value)
-  formData.append('name', name.value)
+  formData.append('description', name.value)
   formData.append('note', note.value)
   formData.append('folderId', props.folderId)
   const icon = getFaviconUrl(link.value)

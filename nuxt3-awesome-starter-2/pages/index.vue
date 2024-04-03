@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Bookmark } from '../types/bookmark'
 import type { Folder } from '../types/folder'
+import type CommonToats from '../components/common/Toats/index.vue'
 const { awesome } = useAppConfig()
 definePageMeta({ layout: 'page' })
 useHead({ titleTemplate: '', title: awesome?.name || 'Nuxt 3 Awesome Starter' })
@@ -12,10 +13,6 @@ const openNewBookmarkDialog = ref(false)
 
 // list book mark
 const listBookmarks = ref<Bookmark[]>()
-const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
-  method: 'GET',
-})
-if (data.value) listBookmarks.value = data.value
 const updateListBookmark = async () => {
   listBookmarks.value = []
   const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
@@ -70,8 +67,9 @@ const closePreview = () => {
       class="w-1/6 h-full border-solid border-r-2 border-sky-500 bg-slate-900"
     >
       <BookmarkFolderList
+        v-if="listFolder"
         :list-folder="listFolder"
-        @update:selected-folder="selectedFolder"
+        @update-selected-folder="selectedFolder"
       ></BookmarkFolderList>
     </div>
     <div class="w-5/6 h-full bg-slate-900">
@@ -85,7 +83,7 @@ const closePreview = () => {
         </button>
       </div>
       <BookmarkList
-        v-if="listBookmarks"
+        v-if="listBookmarks?.length"
         :folder-id="folderId"
         :bookmarks="listBookmarks"
         @preview="showPreview"

@@ -74,7 +74,7 @@ namespace BookmarkWeb.API.Controllers
 
         [HttpPost("register")]
         [ProducesResponseType(typeof(ResponseInfo), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> RegisterAccount([FromBody] UserDto user)
+        public async Task<IActionResult> RegisterAccount(UserDto user)
         {
             ResponseInfo response = new ResponseInfo();
             try
