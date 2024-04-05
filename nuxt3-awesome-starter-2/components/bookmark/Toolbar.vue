@@ -18,13 +18,9 @@
       <div class="mt-10 flex w-full justify-center py-1">
         <slot name="edit" />
       </div>
-      <!-- <div v-for="(text, index) in result" :key="index" class="w-full h-full">
-        {{ text }}
-      </div> -->
-      <!-- <div class="w-full h-full overflow-auto">{{ textElements }}</div> -->
-      <!-- <iframe src="https://kenh14.vn/" class="w-full h-full"></iframe> -->
       <div class="w-full h-full">
         <Chat
+          v-if="bookmark"
           :bookmark="bookmark"
           @update-list-bookmark="emit('updateBookmarks')"
         ></Chat>

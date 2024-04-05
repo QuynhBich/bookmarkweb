@@ -14,7 +14,6 @@ const openNewBookmarkDialog = ref(false)
 // list book mark
 const listBookmarks = ref<Bookmark[]>()
 const updateListBookmark = async () => {
-  listBookmarks.value = []
   const { data } = await useFetchApi<Bookmark[]>(`/bookmarks`, {
     method: 'GET',
   })

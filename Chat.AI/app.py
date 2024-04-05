@@ -19,7 +19,13 @@ def chatbot(
 ):
     print(question)
     print(link)
-    answer = ask_gpt(link, expanded,question)
+    answer = ''
+    if question is None:
+        print('Summary')
+        answer = summary_gpt(link)
+    else:
+        print('Ask question')
+        answer = ask_gpt(link, expanded, question)
     async def event_stream():
         yield answer # Your text data
 
@@ -27,14 +33,26 @@ def chatbot(
 
 def main():
     print("Starting GPT")
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "prompt", nargs="+", type=str, help="Prompt for GPT-3 to complete"
-    )
-    args = parser.parse_args()
-    prompt = " ".join(args.prompt)
-    answer = ask_gpt("https://en.wikipedia.org/wiki/Dog", False, "what is a dog")
+    answer = summary_gpt("https://stackoverflow.com/questions/3289601/null-object-in-python")
     print(answer)
+
+def summary_gpt(link: str):
+    text_qa_template_str = ""
+    text_qa_template_str += (
+        "Follow page: " + link +
+        " Summary the page.\n"
+        "and give me 3 common questions that I can ask on that page(Note: not include the answer).\n"
+        "Cite each question using notation follow format [*] at beginning.\n"
+        # "Make sure write the questions in the same language as the context.\n"
+        "Answer step-by-step."
+    )
+    response = openai.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "user", "content": text_qa_template_str}
+    ])
+    content = response.choices[0].message.content
+    return content
 
 def ask_gpt(link: str, expanded: bool, question: str):
     openai.api_key = openai_api_key
@@ -61,7 +79,7 @@ def ask_gpt(link: str, expanded: bool, question: str):
         # "Note: if the answer is a multiple options, then show it as a list."
         # "If the provided link does not contain a specific answer to the question, simply state 'Answer not found."
         "Answer the question: "
-        f"{question} in this page: "+ link +
+        f"{question}? in this page: "+ link +
         " if you find the answer in content of that page, then state it"
         # "else  simply state 'Answer not found in this link."
         "Note: if the answer is a multiple options, then show it as a list."

@@ -35,8 +35,20 @@ watch(
     )
   },
 )
+watch(
+  () => props.bookmarks,
+  (newValue, oldValue) => {
+    bookmarks.value = props.bookmarks.filter(
+      (item: Bookmark) => item.folderId === props.folderId,
+    )
+  },
+)
 useListenBus('bookmarks:update', (val) => {
   bookmarks.value?.unshift(val)
+  bookmarks.value = []
+  bookmarks.value = props.bookmarks.filter(
+    (item: Bookmark) => item.folderId === props.folderId,
+  )
 })
 const openPreview = (val: Bookmark) => {
   emit('preview', val)

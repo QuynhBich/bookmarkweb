@@ -47,11 +47,13 @@
       class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch h-full justify-start"
     >
       <div class="chat-message gap-4 flex flex-col">
-        <ChatMessage
-          v-for="mess in messages"
-          :key="mess.id"
-          :message="mess"
-        ></ChatMessage>
+        <ChatSummary
+          :list-question="listQuestion"
+          @send-question="sendQuestion"
+        ></ChatSummary>
+        <div v-for="(mess, i) in messages" :key="mess.id">
+          <ChatMessage v-if="i !== 0 && mess" :message="mess"></ChatMessage>
+        </div>
       </div>
     </div>
     <div class="border-t-2 border-gray-200 px-4 pt-4 mb-10">
@@ -64,23 +66,16 @@
         />
         <div
           class="absolute right-0 items-center inset-y-0 hidden sm:flex"
-          @click="handleSendMessage"
+          @click="handleSendMessage()"
         >
           <button
             type="button"
-            class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+            class="inline-flex items-center justify-center rounded-md rounded-l-none px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none h-full"
           >
-            <span class="font-bold">Send</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              class="h-6 w-6 ml-2 transform rotate-90"
-            >
-              <path
-                d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
-              ></path>
-            </svg>
+            <Icon
+              name="material-symbols-light:send-rounded"
+              class="w-10 h-10 pl-1"
+            />
           </button>
         </div>
       </div>
@@ -110,6 +105,7 @@ const props = defineProps({
     default: null,
   },
 })
+const listQuestion = ref<string[]>()
 const getMessages = async (id: string) => {
   const { data } = await useGetApi<InputMessage[]>(
     `/chats/get-messages/${id}`,
@@ -117,18 +113,15 @@ const getMessages = async (id: string) => {
   )
   if (data.value) {
     messages.value = data.value
+    if (data.value[0]) {
+      listQuestion.value = data.value[0].content.split('[*]')
+    }
+  } else {
+    listQuestion.value = []
+    messages.value = []
   }
 }
 const currentBookmark = ref<Bookmark>()
-onMounted(async () => {
-  currentBookmark.value = props.bookmark
-  if (currentBookmark.value.conversationId) {
-    conversationId.value = currentBookmark.value.conversationId
-    await getMessages(conversationId.value)
-  } else {
-    messages.value = []
-  }
-})
 const uuidv4 = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
     /[xy]/g,
@@ -142,7 +135,7 @@ const uuidv4 = (): string => {
 const conversationId = ref('')
 const inputBookmark = ref<InputBookmark>()
 const userInput = ref<InputUser>()
-const inputMessage = ref<InputMessage>()
+const inputMessage = ref<InputMessage | null>(null)
 const getInput = () => {
   conversationId.value = !props.bookmark.conversationId
     ? uuidv4()
@@ -172,6 +165,7 @@ watch(
 watch(
   () => props.bookmark,
   async (oldValue, newValue) => {
+    listQuestion.value = []
     currentBookmark.value = props.bookmark
     if (!props.bookmark.conversationId) {
       await getCurrentBookmark()
@@ -181,6 +175,8 @@ watch(
       await getMessages(conversationId.value)
     } else {
       messages.value = []
+      listQuestion.value = []
+      await handleSendMessage(true)
     }
   },
 )
@@ -222,6 +218,7 @@ const deleteConversation = async () => {
   )
   if (status.value === 'success') {
     messages.value = []
+    listQuestion.value = []
     toatsCommon.value?.setClose()
     setTimeout(async () => {
       await getCurrentBookmark()
@@ -254,11 +251,13 @@ const isDisableSendBtn = ref(false)
 const messages = ref<InputMessage[]>([])
 const addMessageToConversation = (mess: InputMessage) => {
   messages.value.push(mess)
+  listQuestion.value = messages.value[0].content.split('[*]')
 }
-const handleSendMessage = async () => {
-  // if (isDisableSendBtn) return
+const handleSendMessage = async (summary: boolean = false) => {
+  if (message.value === '' && !summary) return
   getInput()
-  if (inputMessage.value?.id)
+  if (summary) inputMessage.value = null
+  if (inputMessage.value?.id && !summary)
     addMessageToConversation({
       id: inputMessage.value?.id,
       content: inputMessage.value.content,
@@ -288,9 +287,7 @@ const onSaveMessage = async (mess: Conversation) => {
   }
 }
 onNuxtReady(async () => {
-  // const initConversation = await fetchConversations()
-  // conversations.value = initConversation.conversations
-
+  console.log('onNuxtReady in chat')
   hub.value = configHub()
   if (hub.value) {
     try {
@@ -298,6 +295,18 @@ onNuxtReady(async () => {
     } catch (e) {
       console.log(e)
     }
+  }
+
+  listQuestion.value = []
+  currentBookmark.value = props.bookmark
+  if (currentBookmark.value.conversationId) {
+    conversationId.value = currentBookmark.value.conversationId
+    await getMessages(conversationId.value)
+  } else {
+    messages.value = []
+    listQuestion.value = []
+    console.log('aaa')
+    await handleSendMessage(true)
   }
 })
 const configHub = (): HubConnection | null => {
@@ -349,6 +358,12 @@ const configHub = (): HubConnection | null => {
   })
 
   return hub
+}
+
+// send suggested question
+const sendQuestion = (question: string) => {
+  message.value = question
+  handleSendMessage()
 }
 </script>
 

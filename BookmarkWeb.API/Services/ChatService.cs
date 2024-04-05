@@ -31,9 +31,9 @@ namespace BookmarkWeb.API.Services
             return await SendMessageAsync(new {link, question, expanded }, replyId);
         }
 
-        public async Task<string> SummaryFileAsync(string conversationId, string replyId)
+        public async Task<string> SummaryFileAsync(string link, string replyId)
         {
-            return await SendMessageAsync(null, replyId);
+            return await SendMessageAsync(new {link}, replyId);
         }
 
         private async Task<string> SendMessageAsync(object? body, string replyId)

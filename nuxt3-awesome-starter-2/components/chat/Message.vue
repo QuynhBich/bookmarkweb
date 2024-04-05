@@ -15,21 +15,26 @@
       class="font-black text-4xl font-mono mr-2 inline-block w-6 h-6 order-2"
     />
   </div>
-  <div v-else class="flex items-end">
-    <div
-      class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start"
-    >
-      <div>
-        <span
-          class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600 whitespace-pre-wrap"
-          >{{ message.content }}</span
-        >
+  <div v-else>
+    <div v-if="message" class="flex items-end">
+      <div
+        class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start"
+      >
+        <div>
+          <span
+            class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600 whitespace-pre-wrap"
+            >{{ message.content }}</span
+          >
+        </div>
       </div>
+      <Icon
+        name="fxemoji:anguish"
+        class="font-black text-4xl font-mono mr-2 inline-block w-6 h-6"
+      />
     </div>
-    <Icon
-      name="fxemoji:anguish"
-      class="font-black text-4xl font-mono mr-2 inline-block w-6 h-6"
-    />
+    <div v-else>
+      <Icon name="svg-spinners:3-dots-scale" class="w-6 h-6" />
+    </div>
   </div>
 </template>
 <script lang="ts" setup>

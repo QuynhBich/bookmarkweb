@@ -79,7 +79,6 @@ onMounted(() => {
   if (!selectedFolder.value) {
     selectedFolder.value = props.listFolder[0]?.id
     emit('updateSelectedFolder', selectedFolder.value)
-    console.log(selectedFolder.value)
   }
 })
 
