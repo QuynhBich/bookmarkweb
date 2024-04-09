@@ -44,7 +44,8 @@
     </div>
     <div
       id="messages"
-      class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch h-full justify-start"
+      ref="scrollContainer"
+      class="flex flex-col space-y-4 p-3 overflow-y-auto h-full justify-start"
     >
       <div class="chat-message gap-4 flex flex-col">
         <ChatSummary
@@ -63,6 +64,7 @@
           type="text"
           placeholder="Write your message!"
           class="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-4 bg-gray-200 rounded-md py-3"
+          @keydown.enter="enterMessage"
         />
         <div
           class="absolute right-0 items-center inset-y-0 hidden sm:flex"
@@ -178,6 +180,7 @@ watch(
       listQuestion.value = []
       await handleSendMessage(true)
     }
+    scroll()
   },
 )
 
@@ -251,7 +254,11 @@ const isDisableSendBtn = ref(false)
 const messages = ref<InputMessage[]>([])
 const addMessageToConversation = (mess: InputMessage) => {
   messages.value.push(mess)
-  listQuestion.value = messages.value[0].content.split('[*]')
+  if (!listQuestion.value?.length)
+    listQuestion.value = messages.value[0].content.split('[*]')
+}
+const enterMessage = (e: Event) => {
+  handleSendMessage()
 }
 const handleSendMessage = async (summary: boolean = false) => {
   if (message.value === '' && !summary) return
@@ -308,6 +315,7 @@ onNuxtReady(async () => {
     console.log('aaa')
     await handleSendMessage(true)
   }
+  scroll()
 })
 const configHub = (): HubConnection | null => {
   const { token } = authStore
@@ -339,6 +347,7 @@ const configHub = (): HubConnection | null => {
       } as InputMessage)
     }
     await onSaveMessage(message)
+    scroll()
   })
 
   async function start() {
@@ -365,27 +374,12 @@ const sendQuestion = (question: string) => {
   message.value = question
   handleSendMessage()
 }
+
+// scroll to bottom
+const scrollContainer = ref<HTMLDivElement | null>(null)
+const scroll = () => {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight * 2
+  }
+}
 </script>
-
-<style>
-.scrollbar-w-2::-webkit-scrollbar {
-  width: 0.25rem;
-  height: 0.25rem;
-}
-
-.scrollbar-track-blue-lighter::-webkit-scrollbar-track {
-  --bg-opacity: 1;
-  background-color: #f7fafc;
-  background-color: rgba(247, 250, 252, var(--bg-opacity));
-}
-
-.scrollbar-thumb-blue::-webkit-scrollbar-thumb {
-  --bg-opacity: 1;
-  background-color: #edf2f7;
-  background-color: rgba(237, 242, 247, var(--bg-opacity));
-}
-
-.scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
-  border-radius: 0.25rem;
-}
-</style>

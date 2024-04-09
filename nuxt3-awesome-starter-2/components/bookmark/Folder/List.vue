@@ -1,17 +1,17 @@
 <template>
   <div
-    class="flex h-full w-full flex-col border-r border-neutral-100 bg-[#FBFBFB] dark:border-neutral-800 dark:bg-neutral-900"
+    class="flex h-full w-full mt-3 flex-col border-r border-neutral-100 bg-[#FBFBFB] dark:border-neutral-800 dark:bg-neutral-900"
   >
     <div class="p-2">
       <label for="search">
-        <div class="relative h-8 flex justify-center items-center gap-3">
+        <div class="relative h-8 flex justify-center items-center gap-3 mb-5">
           <div
             class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
           >
-            <!-- <Icon
-              name="lucide:baby"
-              class="font-black text-4xl font-mono mr-2 inline-block"
-            /> -->
+            <Icon
+              name="material-symbols-light:search-rounded"
+              class="font-black text-2xl"
+            />
           </div>
           <input
             id="search"

@@ -24,7 +24,7 @@ export default defineAppConfig({
                 {
                   type: 'link',
                   title: 'Profile',
-                  to: { name: '' },
+                  to: { name: 'profile' },
                 },
               ],
             },
