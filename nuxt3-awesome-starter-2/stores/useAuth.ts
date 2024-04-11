@@ -1,5 +1,6 @@
 /* eslint-disable require-await */
 import { defineStore } from 'pinia'
+import { googleSdkLoaded } from 'vue3-google-login'
 import type {
   IAuthToken,
   IAuthUser,
@@ -65,6 +66,35 @@ export const useAuthStore = defineStore('auth', {
       //     password,
       //   })
       //   .then((token: IAuthToken) => this.setToken(token))
+    },
+    async authenticateGoogleUser() {
+      const config = useRuntimeConfig()
+      console.log(config.public.googleClientId)
+      googleSdkLoaded((google) => {
+        google.accounts.oauth2
+          .initCodeClient({
+            client_id: config.public.googleClientId ?? '',
+            scope: 'email openid profile',
+            callback: async (response) => {
+              console.log(response.code)
+              const result: LoginResult = await $fetch(`/auth/google`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  accept: 'application/json',
+                },
+                body: {
+                  oAuthCode: response.code,
+                },
+                baseURL: config.public.apiBaseUrl,
+              })
+              if (result.data) {
+                this.setToken(result.data)
+              }
+            },
+          })
+          .requestCode()
+      })
     },
     logUserOut() {
       this.setToken(null)

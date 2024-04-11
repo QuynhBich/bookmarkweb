@@ -13,6 +13,10 @@ using Microsoft.EntityFrameworkCore;
 using BookmarkWeb.API.Commons.Enums;
 using BookmarkWeb.API.Commons.Schemas;
 using BookmarkWeb.API.Commons.CodeMaster;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Options;
+using Google.Apis.Auth;
 
 namespace BookmarkWeb.API.Models.Login
 {
@@ -37,19 +41,23 @@ namespace BookmarkWeb.API.Models.Login
         Task<ResponseInfo> RemoveToken();
 
         Task<ResponseInfo> RegisterAccount(UserDto user);
+        Task<ResponseInfo> GetGoogleUserTokenAsync(string oauthCode);
     }
     public class LoginModel : BaseModel, ILoginModel
     {
         private readonly ILogger<LoginModel> _logger;
+        private readonly GoogleOAuthSettings _googleOAuthSettings;
         private string _className = "";
 
         public LoginModel(
             ILogger<LoginModel> logger,
-            IServiceProvider provider
+            IServiceProvider provider,
+            IOptions<GoogleOAuthSettings> googleOAuthSettings
         ) : base(provider)
         {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _className = GetType().Name;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _className = GetType().Name;
+            _googleOAuthSettings = googleOAuthSettings.Value;
         }
         static string GetActualAsyncMethodName([CallerMemberName] string name = null) => name;
         public async Task<ResponseInfo> CheckAccount(UserLogin user)
@@ -71,7 +79,7 @@ namespace BookmarkWeb.API.Models.Login
 
                 _logger.LogInformation($"[{_className}][{method}] Kiểm tra thông tin người dùng nhập");
 
-                if (userDB == null || userDB.Password != Security.GetSHA256(Security.GetSimpleMD5(user.Password)))
+                if (userDB == null || (user.Password != "" && userDB.Password != Security.GetSHA256(Security.GetSimpleMD5(user.Password))))
                 {
                     result.MsgNo = MSG_NO.USERNAME_OR_PASSWORD_NOT_CORRECT;
                     result.Code = CodeResponse.HAVE_ERROR;
@@ -116,6 +124,52 @@ namespace BookmarkWeb.API.Models.Login
             catch (Exception e)
             {
                 await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                throw;
+            }
+        }
+
+        public async Task<ResponseInfo> GetGoogleUserTokenAsync(string oauthCode)
+        {
+            ResponseInfo result = new ResponseInfo();
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow(
+                new GoogleAuthorizationCodeFlow.Initializer
+                {
+                    ClientSecrets = new ClientSecrets()
+                    {
+                        ClientId = _googleOAuthSettings.ClientId,
+                        ClientSecret = _googleOAuthSettings.ClientSecret
+                    },
+                });
+                var token = await flow.ExchangeCodeForTokenAsync(string.Empty, oauthCode, _googleOAuthSettings.RedirectUri, CancellationToken.None);
+                GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(token.IdToken);
+                UserDto googleAcc = new()
+                {
+                    Username = payload.Email,
+                    Password = "",
+                    Email = payload.Email,
+                };
+
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == googleAcc.Email);
+                if (user == null)
+                {
+                    await RegisterAccount(googleAcc);
+                }
+                UserLogin newAccount = new()
+                {
+                    Username = googleAcc.Username,
+                    Password = googleAcc.Password,
+                };
+                result = await CheckAccount(newAccount);
+                _logger.LogInformation($"[{_className}][{method}] End");
+                return result;
+            }
+            catch (Exception e)
+            {
                 _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
                 throw;
             }

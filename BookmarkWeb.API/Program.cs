@@ -8,6 +8,7 @@ using BookmarkWeb.API.Models.Chats;
 using BookmarkWeb.API.Models.Common.Schemas;
 using BookmarkWeb.API.Models.Folders;
 using BookmarkWeb.API.Models.Login;
+using BookmarkWeb.API.Models.Login.Schemas;
 using BookmarkWeb.API.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -34,6 +35,7 @@ builder.Services.AddSignalR(hubOptions =>
     hubOptions.MaximumParallelInvocationsPerClient = 3;
 });
 var services = builder.Services;
+services.AddOptions<GoogleOAuthSettings>().BindConfiguration($"Authentication:{nameof(GoogleOAuthSettings)}");
 services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 services.AddEndpointsApiExplorer();

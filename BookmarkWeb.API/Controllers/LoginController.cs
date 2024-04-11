@@ -114,5 +114,22 @@ namespace BookmarkWeb.API.Controllers
             }
             return Ok(response);
         }
+
+        [HttpPost("google")]
+        public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleOAuthCode param)
+        {
+            ResponseInfo response = new ResponseInfo();
+            try
+            {
+                response = await _loginModel.GetGoogleUserTokenAsync(param.OAuthCode);
+            }
+            catch (Exception e)
+            {
+                response.Code = CodeResponse.SERVER_ERROR;
+                response.MsgNo = MSG_NO.SERVER_ERROR;
+                response.Data.Add("error", e.Message);
+            }
+            return Ok(response);
+        }
     }
 }

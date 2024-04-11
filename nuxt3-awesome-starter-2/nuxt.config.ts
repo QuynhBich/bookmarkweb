@@ -10,6 +10,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.API_BASE_URL || 'https://localhost:5001',
+      googleClientId:
+        process.env.GOOGLE_CLIENT_ID ||
+        '953071676402-m3mtmenij7rr3d5ltsftpg2dhbs8be74.apps.googleusercontent.com',
     },
   },
   // app config

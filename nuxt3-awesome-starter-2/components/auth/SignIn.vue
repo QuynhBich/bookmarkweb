@@ -57,6 +57,17 @@
                 LogIn
               </div>
             </div>
+            <div class="flex" @click="loginWithGoogle">
+              <div
+                class="style_btn false border-none outline-none bg-gray-200 text-[13px] rounded cursor-pointer w-full h-10 leading-10 text-center my-2 mx-0 font-normal flex justify-center gap-4"
+              >
+                <div class="mt-1">
+                  <Icon name="logos:google-icon" class="h-7 w-7" />
+                </div>
+                <div class="text-center text-black">Sign in with Google</div>
+              </div>
+              <span class="google_login_btn_container"></span>
+            </div>
             <div class="text-center mt-4">
               <a href="#" class="text-gray-600 hover:underline"
                 >Forgot password?</a
@@ -160,6 +171,15 @@ const signIn = async () => {
   await authenticateUser(input)
   const { authenticated } = storeToRefs(useAuthStore())
 
+  if (authenticated) {
+    openDialog.value = false
+  }
+}
+
+const loginWithGoogle = async () => {
+  const { authenticateGoogleUser } = useAuthStore()
+  await authenticateGoogleUser()
+  const { authenticated } = storeToRefs(useAuthStore())
   if (authenticated) {
     openDialog.value = false
   }

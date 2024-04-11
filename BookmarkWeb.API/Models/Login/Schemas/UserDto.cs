@@ -12,7 +12,7 @@ namespace BookmarkWeb.API.Models.Login.Schemas
         public string? Username { get; set; }
 
         [JsonProperty("password")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [JsonProperty("email")]
         public string? Email { get; set; }
