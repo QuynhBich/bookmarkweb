@@ -33,6 +33,12 @@ namespace BookmarkWeb.API.Database.Entities
         [Column("content")]
         public string Content { set; get; }
 
+        [Column("note")]
+        public string? Note { set; get; }
+
+        [Column("isNoted")]
+        public bool IsNoted { set; get; }
+
         public virtual Conversation Conversation { set; get; }
 
         public virtual User User { set; get; }

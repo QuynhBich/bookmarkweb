@@ -88,7 +88,7 @@ const removeBookmark = async (id: string) => {
     toatsCommon.value?.setClose()
     setTimeout(() => {
       emit('remove')
-    }, 3000)
+    }, 50000)
   }
 }
 </script>

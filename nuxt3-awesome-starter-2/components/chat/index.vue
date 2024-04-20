@@ -53,7 +53,14 @@
           @send-question="sendQuestion"
         ></ChatSummary>
         <div v-for="(mess, i) in messages" :key="mess.id">
-          <ChatMessage v-if="i !== 0 && mess" :message="mess"></ChatMessage>
+          <ChatMessage
+            v-if="i !== 0 && mess"
+            :message="mess"
+            @open-note-pad="
+              (message: InputMessage) => emit('openNotePad', message)
+            "
+            @highlight="highlightToast()"
+          ></ChatMessage>
         </div>
       </div>
     </div>
@@ -113,6 +120,7 @@ const getMessages = async (id: string) => {
     `/chats/get-messages/${id}`,
     { server: false },
   )
+  console.log(data.value)
   if (data.value) {
     messages.value = data.value
     if (data.value[0]) {
@@ -150,13 +158,16 @@ const getInput = () => {
     id: uuidv4(),
     content: message.value,
     isMy: true,
+    isNoted: false,
+    note: '',
+    isNote: false,
   }
   if (authStore.user?.Username)
     userInput.value = {
       userName: authStore.user?.Username,
     }
 }
-const emit = defineEmits(['close', 'updateListBookmark'])
+const emit = defineEmits(['close', 'updateListBookmark', 'openNotePad'])
 const close = () => {
   emit('close')
 }
@@ -223,9 +234,10 @@ const deleteConversation = async () => {
     messages.value = []
     listQuestion.value = []
     toatsCommon.value?.setClose()
-    setTimeout(async () => {
-      await getCurrentBookmark()
-    }, 100)
+    await getCurrentBookmark()
+    // setTimeout(async () => {
+    //
+    // }, 50000)
   }
 }
 // chat
@@ -269,6 +281,9 @@ const handleSendMessage = async (summary: boolean = false) => {
       id: inputMessage.value?.id,
       content: inputMessage.value.content,
       isMy: true,
+      isNoted: false,
+      note: '',
+      isNote: false,
     })
   await hub.value?.invoke('OnSendMessage', {
     conversationId: conversationId.value,
@@ -312,7 +327,6 @@ onNuxtReady(async () => {
   } else {
     messages.value = []
     listQuestion.value = []
-    console.log('aaa')
     await handleSendMessage(true)
   }
   scroll()
@@ -381,5 +395,10 @@ const scroll = () => {
   if (scrollContainer.value) {
     scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight * 2
   }
+}
+
+// highlight toast
+const highlightToast = () => {
+  toatsCommon.value?.setClose('Success to store message!')
 }
 </script>

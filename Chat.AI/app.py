@@ -78,12 +78,13 @@ def ask_gpt(link: str, expanded: bool, question: str):
         # # "else  simply state 'Answer not found in this link."
         # "Note: if the answer is a multiple options, then show it as a list."
         # "If the provided link does not contain a specific answer to the question, simply state 'Answer not found."
-        "Answer the question: "
-        f"{question}? in this page: "+ link +
-        " if you find the answer in content of that page, then state it"
+        "Following the content in this page: "+ link +
+        " Answer the question: "
+        f"{question}?"
+        " if you find the answer in content of that page, then state it."
+        " If the provided link does not contain answer to the question, simply state 'Answer not found."
         # "else  simply state 'Answer not found in this link."
         "Note: if the answer is a multiple options, then show it as a list."
-        "If the provided link does not contain a specific answer to the question, simply state 'Answer not found."
     )
     response = openai.chat.completions.create(
     model="gpt-3.5-turbo",

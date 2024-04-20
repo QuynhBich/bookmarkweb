@@ -16,6 +16,8 @@ namespace BookmarkWeb.API.Models.Chats
         Task<ResponseInfo> CreateNewConversation(Schemas.Conversation data);
         Task<List<InputMessage>> GetMessage(string conversationId);
         Task<ResponseInfo> DeleteConversation (string conversationId);
+        Task<ResponseInfo> UpdateNotePad(InputMessage inputMessage);
+        Task<ResponseInfo> Highlight(InputMessage inputMessage);
     }
     public class ChatsModel : BaseModel, IChatsModel
     {
@@ -158,7 +160,9 @@ namespace BookmarkWeb.API.Models.Chats
                             {
                                 Id = x.Id.ToString(),
                                 Content = x.Content,
-                                IsMy = x.UserId != null
+                                IsMy = x.UserId != null,
+                                IsNoted = x.IsNoted,
+                                Note = x.Note,
                             }
                         ).ToListAsync();
                 return result;
@@ -203,6 +207,66 @@ namespace BookmarkWeb.API.Models.Chats
                 throw;
             }
 
+            return response;
+        }
+
+        public async Task<ResponseInfo> UpdateNotePad(InputMessage inputMessage)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                transaction = await _context.Database.BeginTransactionAsync();
+                var message = await _context.Messages.FirstOrDefaultAsync(x => x.Id.ToString() == inputMessage.Id);
+                if (message is not null)
+                {
+                    message.Note = inputMessage.Note;
+                    _context.Messages.Update(message);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation($"[{_className}][{method}] End");
+                }
+            } catch(Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw;
+            }
+            return response;
+        }
+
+        public async Task<ResponseInfo> Highlight(InputMessage inputMessage)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                transaction = await _context.Database.BeginTransactionAsync();
+                var message = await _context.Messages.FirstOrDefaultAsync(x => x.Id.ToString() == inputMessage.Id);
+                if (message is not null)
+                {
+                    message.IsNoted = inputMessage.IsNoted;
+                    _context.Messages.Update(message);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation($"[{_className}][{method}] End");
+                }
+            } catch(Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw;
+            }
             return response;
         }
     }

@@ -58,6 +58,56 @@ const showPreview = (val: Bookmark) => {
 const closePreview = () => {
   drawerVisible.value = false
 }
+// import file
+const links = ref<(string | null)[]>([])
+interface BookmarkParam {
+  folderId: string
+  url: string
+  domain: string
+  image: string
+}
+const toatsCommon = ref<InstanceType<typeof CommonToats> | null>(null)
+const importFile = (e: Event) => {
+  const fileInput = e.target as HTMLInputElement
+  const file = fileInput.files && fileInput!.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = async () => {
+    const result = reader.result
+    if (typeof result === 'string') {
+      const parser = new DOMParser()
+      const htmlDoc = parser.parseFromString(result, 'text/html')
+      const linksArray = Array.from(htmlDoc.querySelectorAll('dl dt a')).map(
+        (link) => link.getAttribute('href'),
+      )
+      links.value = linksArray.filter((link) => link!)
+      const listBookmarks: BookmarkParam[] = []
+      links.value.forEach((element) => {
+        const icon = getFaviconUrl(element!)
+        const domain = getDomain(element!)
+        const bookmark = {
+          folderId: folderId.value,
+          url: element,
+          domain: domain!,
+          image: icon,
+        } as BookmarkParam
+        listBookmarks.push(bookmark)
+      })
+      const param = { list: listBookmarks }
+      const { data } = await usePostApi<Bookmark[]>(
+        '/bookmarks/create-bunk-of-bookmark',
+        JSON.stringify(param),
+        { server: false },
+      )
+      if (data.value) {
+        await updateListBookmark()
+        toatsCommon.value?.setClose('Import data successfully')
+      }
+    }
+  }
+  reader.readAsText(file)
+  fileInput.value = ''
+}
 </script>
 
 <template>
@@ -80,6 +130,22 @@ const closePreview = () => {
         >
           + Add Bookmark
         </button>
+        <div
+          class="flex gap-1 flex-shrink-0 border-transparent border-4 text-sky-500 hover:text-teal-800 text-sm py-1 px-2 rounded mr-2"
+          type="button"
+        >
+          <label for="fileInput" class="upload-label flex gap-1 cursor-pointer"
+            ><Icon class="w-4 h-4" name="fa6-solid:file-import"></Icon>
+            <span>Import File</span>
+          </label>
+          <input
+            id="fileInput"
+            ref="fileInput"
+            type="file"
+            class="hidden"
+            @change="importFile"
+          />
+        </div>
       </div>
       <BookmarkList
         v-if="listBookmarks?.length"
@@ -102,4 +168,5 @@ const closePreview = () => {
     @close="closePreview"
     @update-bookmarks="updateListBookmark"
   ></BookmarkToolbar>
+  <CommonToats ref="toatsCommon" type="success"></CommonToats>
 </template>

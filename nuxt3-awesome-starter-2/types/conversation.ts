@@ -2,6 +2,9 @@ export interface InputMessage {
   id: string
   content: string
   isMy: boolean
+  isNote: boolean
+  note: string
+  isNoted: boolean
 }
 
 export interface InputBookmark {

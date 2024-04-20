@@ -1,4 +1,9 @@
 <template>
+  <ChatNote
+    v-if="isOpenNotePad"
+    :message="message"
+    @close-note-pad="isOpenNotePad = false"
+  ></ChatNote>
   <div>
     <div
       class="absolute right-0 top-0 z-50 h-screen w-0 overflow-hidden bg-white pl-0 transition-all dark:bg-neutral-900 dark:text-neutral-400"
@@ -23,6 +28,7 @@
           v-if="bookmark"
           :bookmark="bookmark"
           @update-list-bookmark="emit('updateBookmarks')"
+          @open-note-pad="(mess: InputMessage) => openNotePad(mess)"
         ></Chat>
       </div>
     </div>
@@ -39,6 +45,7 @@
 </template>
 <script lang="ts" setup>
 import type { Bookmark } from '../../types/bookmark'
+import type { InputMessage } from '../../types/conversation'
 
 const props = defineProps({
   drawerVisible: {
@@ -58,4 +65,12 @@ watch(
   () => props.drawerVisible,
   (oldValue, newValue) => {},
 )
+
+// Note
+const isOpenNotePad = ref(false)
+const message = ref<InputMessage>()
+const openNotePad = (mess: InputMessage) => {
+  isOpenNotePad.value = true
+  message.value = mess
+}
 </script>

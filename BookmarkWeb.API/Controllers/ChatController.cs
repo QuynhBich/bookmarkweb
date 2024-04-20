@@ -86,5 +86,33 @@ namespace BookmarkWeb.API.Controllers
                 return StatusCode(500, new { Error = e.Message });
             }
         }
+
+        [HttpPost("update-notepad")]
+        [Authorize]
+        public async Task<IActionResult> UpdateNotepad ([FromBody]InputMessage inputMessage)
+        {
+            try
+            {
+                return Ok(await _chatsModel.UpdateNotePad(inputMessage));
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
+
+        [HttpPost("highlight-message")]
+        [Authorize]
+        public async Task<IActionResult> HighlightMessage ([FromBody]InputMessage inputMessage)
+        {
+            try
+            {
+                return Ok(await _chatsModel.Highlight(inputMessage));
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
     }
 }

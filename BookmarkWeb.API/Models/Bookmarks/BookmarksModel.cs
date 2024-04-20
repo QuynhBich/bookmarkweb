@@ -10,6 +10,7 @@ namespace BookmarkWeb.API.Models.Bookmarks
     public interface IBookmarkModel
     {
         Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data);
+        Task<List<BookmarkDto>> CreateBunkOfBookmarks(List<BookmarkCreateModel> data);
         Task<List<BookmarkDto>> GetListBookmark();
         Task<BookmarkDto> GetBookmarkById(string id);
         Task<ResponseInfo> DeleteBookmark (string id);
@@ -24,6 +25,66 @@ namespace BookmarkWeb.API.Models.Bookmarks
             _className = GetType().Name;
         }
         static string GetActualAsyncMethodName([CallerMemberName] string name = null) => name;
+
+        public async Task<List<BookmarkDto>> CreateBunkOfBookmarks(List<BookmarkCreateModel> data)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            Bookmark? bookmark;
+            List<Bookmark> listBookmarks = new();
+            List<BookmarkDto> listBookmarkDtos = new();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                var userId = AppState.Instance.CurrentUser.Id;
+                transaction = await _context.Database.BeginTransactionAsync();
+                foreach (var item in data)
+                {
+                    var newId = Guid.NewGuid();
+                    bookmark = new Bookmark()
+                    {
+                        Id = newId,
+                        UserId = userId,
+                        Domain = item.Domain,
+                        Url = item.Url,
+                        Image = item.Image,
+                        Note = item.Note,
+                        FolderId = item.FolderId,
+                        Description = item.Description,
+                        Title = item.Title
+                    };
+                    
+                    listBookmarks.Add(bookmark);
+
+                    listBookmarkDtos.Add(new BookmarkDto() {
+                        Id = bookmark.Id,
+                        Url = bookmark.Url,
+                        Domain = bookmark.Domain,
+                        Image = bookmark.Image,
+                        Note = bookmark.Note,
+                        Description = bookmark.Description
+                    });
+                }
+
+                _context.Bookmarks.AddRange(listBookmarks);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation($"[{_className}][{method}] End");
+            }
+            catch (Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw new Exception();
+            }
+
+            return listBookmarkDtos;
+        }
+
         public async Task<BookmarkDto> CreateNewBookmark(BookmarkCreateModel data)
         {
             ResponseInfo response = new();

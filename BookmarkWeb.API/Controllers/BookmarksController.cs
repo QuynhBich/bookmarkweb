@@ -64,6 +64,21 @@ namespace BookmarkWeb.API.Controllers
             }
         }
 
+        [HttpPost("create-bunk-of-bookmark")]
+        [Authorize]
+        public async Task<ActionResult<List<BookmarkDto>>>  CreateBunkOfBookmarks([FromBody] ListBookmarkCreateModel list)
+        {
+            try
+            {
+                var response = await _bookmarkModel.CreateBunkOfBookmarks(list.List);
+                return response;
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
+
         [HttpPost("delete-bookmark/{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteBookmark (string id)

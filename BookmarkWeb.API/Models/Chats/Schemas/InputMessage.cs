@@ -12,5 +12,11 @@ namespace BookmarkWeb.API.Models.Chats.Schemas
 
         [JsonProperty("isMy")]
         public bool IsMy { set; get; }
+
+        [JsonProperty("isNoted")]
+        public bool IsNoted { set; get; }
+
+        [JsonProperty("note")]
+        public string? Note { set; get; }
     }
 }
