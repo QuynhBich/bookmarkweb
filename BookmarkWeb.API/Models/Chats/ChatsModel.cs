@@ -18,6 +18,8 @@ namespace BookmarkWeb.API.Models.Chats
         Task<ResponseInfo> DeleteConversation (string conversationId);
         Task<ResponseInfo> UpdateNotePad(InputMessage inputMessage);
         Task<ResponseInfo> Highlight(InputMessage inputMessage);
+        Task<List<InputMessage>> GetStorageMessage();
+        Task<ResponseInfo> DeleteStorageMessage(string id);
     }
     public class ChatsModel : BaseModel, IChatsModel
     {
@@ -174,6 +176,32 @@ namespace BookmarkWeb.API.Models.Chats
             }
         }
 
+        public async Task<List<InputMessage>> GetStorageMessage()
+        {
+            string method = GetActualAsyncMethodName();
+            try{
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                List<InputMessage> result = new();
+                result = await _context.Messages.Where(x => x.IsNoted).OrderBy(x => x.UpdatedAt)
+                .Select(x => new InputMessage
+                            {
+                                Id = x.Id.ToString(),
+                                Content = x.Content,
+                                IsMy = x.UserId != null,
+                                IsNoted = x.IsNoted,
+                                Note = x.Note,
+                                UpdatedAt = x.UpdatedAt
+                            }
+                        ).ToListAsync();
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                throw;
+            }
+        }
+
         public async Task<ResponseInfo> DeleteConversation(string conversationId)
         {
             ResponseInfo response = new();
@@ -207,6 +235,35 @@ namespace BookmarkWeb.API.Models.Chats
                 throw;
             }
 
+            return response;
+        }
+
+        public async Task<ResponseInfo> DeleteStorageMessage(string id)
+        {
+            ResponseInfo response = new();
+            IDbContextTransaction transaction = null;
+            string method = GetActualAsyncMethodName();
+            try
+            {
+                _logger.LogInformation($"[{_className}][{method}] Start");
+                transaction = await _context.Database.BeginTransactionAsync();
+                var message = await _context.Messages.FirstOrDefaultAsync(x => x.Id.ToString() == id);
+                if (message is not null)
+                {
+                    _context.Messages.Remove(message);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation($"[{_className}][{method}] End");
+                }
+            } catch(Exception e)
+            {
+                await _context.RollbackAsync(transaction);
+                _logger.LogError($"[{_className}][{method}] Exception: {e.Message}");
+                response.Exception(e);
+
+                throw;
+            }
             return response;
         }
 

@@ -8,7 +8,7 @@
       v-if="listQuestion?.length"
       class="flex flex-col space-y-2 text-xs max-w-xs mx-2 items-start"
     >
-      <div>
+      <div class="">
         <span
           v-for="(item, i) in listQuestion"
           :key="i"
@@ -16,16 +16,23 @@
           :class="[{ 'rounded-t-lg': i === 0 }]"
         >
           <div class="flex items-end">
-            <span class="whitespace-pre-wrap w-[95%]">{{ item }}</span>
+            <span v-if="i === 0" class="whitespace-pre-wrap w-[95%]">{{
+              item
+            }}</span>
             <div
-              v-if="i !== 0"
-              class="w-5 h-5 rounded-full bg-sky-500 cursor-pointer mb-2"
-              @click="sendQuestion(item)"
+              v-else
+              class="flex bg-orange-400 text-black p-1 rounded-md items-end justify-center"
             >
-              <Icon
-                name="material-symbols-light:send-rounded"
-                class="w-full h-full pl-1"
-              />
+              <span class="whitespace-pre-wrap w-[95%]">{{ item }}</span>
+              <div
+                class="w-5 h-5 rounded-full bg-orange-700 cursor-pointer flex items-end justify-center"
+                @click="sendQuestion(item)"
+              >
+                <Icon
+                  name="material-symbols-light:send-rounded"
+                  class="w-full h-full pl-1 text-white"
+                />
+              </div>
             </div>
           </div>
         </span>

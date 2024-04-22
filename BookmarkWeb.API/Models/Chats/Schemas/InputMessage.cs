@@ -18,5 +18,8 @@ namespace BookmarkWeb.API.Models.Chats.Schemas
 
         [JsonProperty("note")]
         public string? Note { set; get; }
+        
+        [JsonProperty("updatedAt")]
+        public DateTimeOffset? UpdatedAt { set; get; }
     }
 }

@@ -4,7 +4,7 @@ import type { Folder } from '../types/folder'
 import type CommonToats from '../components/common/Toats/index.vue'
 const { awesome } = useAppConfig()
 definePageMeta({ layout: 'page' })
-useHead({ titleTemplate: '', title: awesome?.name || 'Nuxt 3 Awesome Starter' })
+useHead({ title: 'Quinn.Bookmark' })
 const folderId = ref('')
 const selectedFolder = (id: string) => {
   folderId.value = id

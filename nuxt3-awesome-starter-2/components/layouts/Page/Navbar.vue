@@ -26,6 +26,11 @@ const logout = () => {
   logUserOut()
   window.location.reload()
 }
+
+const goToStogare = () => {
+  const router = useRouter()
+  router.push('/storage')
+}
 </script>
 
 <template>

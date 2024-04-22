@@ -1,6 +1,12 @@
 <template>
   <div class="flex-1 p:2 sm:p-6 justify-between flex flex-col h-full">
     <div
+      v-if="showSearchBar"
+      class="w-full h-auto flex justify-center items-center"
+    >
+      <ChatSearch ref="chatSearch" @searching="searchMessage"></ChatSearch>
+    </div>
+    <div
       class="flex sm:items-center justify-between py-1 border-b-2 border-gray-200"
     >
       <div class="relative flex items-center space-x-4">
@@ -32,7 +38,11 @@
         <button
           class="inline-flex items-center justify-center rounded-lg border border-gray-500 h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
         >
-          <Icon name="material-symbols:search" class="w-5 h-5" />
+          <Icon
+            name="material-symbols:search"
+            class="w-5 h-5"
+            @click="showSearchBar = true"
+          />
         </button>
         <button
           class="inline-flex items-center justify-center rounded-lg border border-gray-500 h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
@@ -56,6 +66,7 @@
           <ChatMessage
             v-if="i !== 0 && mess"
             :message="mess"
+            :key-search="keySearch"
             @open-note-pad="
               (message: InputMessage) => emit('openNotePad', message)
             "
@@ -79,7 +90,7 @@
         >
           <button
             type="button"
-            class="inline-flex items-center justify-center rounded-md rounded-l-none px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none h-full"
+            class="inline-flex items-center justify-center rounded-md rounded-l-none px-4 py-3 transition duration-500 ease-in-out text-white bg-sky-300 hover:bg-sky-500 focus:outline-none h-full"
           >
             <Icon
               name="material-symbols-light:send-rounded"
@@ -103,7 +114,7 @@ import {
   type InputUser,
 } from '../../types/conversation'
 import type { Bookmark } from '../../types/bookmark'
-import type { CommonToats } from '#build/components'
+import type { ChatSearch, CommonToats } from '#build/components'
 const props = defineProps({
   drawerVisible: {
     type: Boolean,
@@ -120,15 +131,16 @@ const getMessages = async (id: string) => {
     `/chats/get-messages/${id}`,
     { server: false },
   )
-  console.log(data.value)
   if (data.value) {
     messages.value = data.value
+    tempMessages.value = data.value
     if (data.value[0]) {
       listQuestion.value = data.value[0].content.split('[*]')
     }
   } else {
     listQuestion.value = []
     messages.value = []
+    tempMessages.value = []
   }
 }
 const currentBookmark = ref<Bookmark>()
@@ -161,6 +173,7 @@ const getInput = () => {
     isNoted: false,
     note: '',
     isNote: false,
+    updatedAt: null,
   }
   if (authStore.user?.Username)
     userInput.value = {
@@ -178,7 +191,9 @@ watch(
 watch(
   () => props.bookmark,
   async (oldValue, newValue) => {
+    showSearchBar.value = false
     listQuestion.value = []
+    keySearch.value = ''
     currentBookmark.value = props.bookmark
     if (!props.bookmark.conversationId) {
       await getCurrentBookmark()
@@ -205,6 +220,33 @@ const getCurrentBookmark = async () => {
   if (data.value) {
     currentBookmark.value = data.value
   }
+}
+// search message
+onMounted(() => {
+  window.addEventListener('keydown', handleEscKey)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleEscKey)
+})
+const handleEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    showSearchBar.value = false
+  }
+}
+const chatSearch = ref<InstanceType<typeof ChatSearch> | null>(null)
+const showSearchBar = ref(false)
+const keySearch = ref('')
+const searchMessage = () => {
+  if (chatSearch.value?.keySearch) keySearch.value = chatSearch.value?.keySearch
+  else {
+    keySearch.value = ''
+    return
+  }
+  messages.value = tempMessages.value.filter(
+    (x: InputMessage) =>
+      !chatSearch.value?.keySearch ||
+      x.content.toLowerCase().includes(keySearch.value.toLowerCase()),
+  )
 }
 
 // download conversation
@@ -264,6 +306,7 @@ const HUB = {
 const message = ref('')
 const isDisableSendBtn = ref(false)
 const messages = ref<InputMessage[]>([])
+const tempMessages = ref<InputMessage[]>([])
 const addMessageToConversation = (mess: InputMessage) => {
   messages.value.push(mess)
   if (!listQuestion.value?.length)
@@ -284,6 +327,7 @@ const handleSendMessage = async (summary: boolean = false) => {
       isNoted: false,
       note: '',
       isNote: false,
+      updatedAt: null,
     })
   await hub.value?.invoke('OnSendMessage', {
     conversationId: conversationId.value,
@@ -399,6 +443,6 @@ const scroll = () => {
 
 // highlight toast
 const highlightToast = () => {
-  toatsCommon.value?.setClose('Success to store message!')
+  toatsCommon.value?.setClose('Successfully')
 }
 </script>

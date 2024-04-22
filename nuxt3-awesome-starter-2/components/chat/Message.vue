@@ -20,14 +20,15 @@
         class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end"
       >
         <div>
+          <!-- eslint-disable vue/no-v-html -->
           <span
-            class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white"
-            >{{ message.content }}</span
-          >
+            class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-orange-400 text-black"
+            v-html="highlightedText"
+          ></span>
         </div>
       </div>
       <Icon
-        name="fxemoji:koala"
+        name="fluent-emoji-flat:loudly-crying-face"
         class="font-black text-4xl font-mono mr-2 inline-block w-6 h-6 order-2"
       />
       <div
@@ -55,6 +56,7 @@
             @mouseenter="showTextNote(true)"
             @mouseleave="showTextNote(false)"
           >
+            <!-- eslint-disable vue/no-v-html -->
             <span
               ref="highlightText"
               class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600 whitespace-pre-wrap"
@@ -64,9 +66,9 @@
                   { 'bg-yellow-300': isNoted || message.isNoted },
                   { 'bg-gray-300': !isNoted },
                 ]"
-                >{{ message.content }}</span
+                v-html="highlightedText"
               ></span
-            >
+            ></span>
           </div>
         </div>
         <Icon
@@ -97,8 +99,11 @@ const props = defineProps({
     type: Object as PropType<InputMessage>,
     default: null,
   },
+  keySearch: {
+    type: String,
+    default: '',
+  },
 })
-console.log(props.message)
 const emits = defineEmits(['openNotePad', 'highlight'])
 const isShowToolBar = ref(false)
 const showNote = ref(false)
@@ -109,12 +114,24 @@ const showTextNote = (x: boolean) => {
   showNote.value = x
 }
 
+// highlight the key search
+const textContent = ref(props.message.content)
+const highlightedText = computed(() => {
+  if (!props.keySearch) {
+    return props.message.content
+  }
+  const regex = new RegExp(`${props.keySearch}`, 'gi')
+  return textContent.value.replace(
+    regex,
+    `<span class="highlight">${props.keySearch}</span>`,
+  )
+})
+
 // fill color
 const isNoted = ref(false)
 const message = ref(props.message)
-message.value.isNote = isNoted.value
 const fillColor = async () => {
-  isNoted.value = !isNoted.value
+  isNoted.value = !message.value.isNoted
   message.value.isNoted = isNoted.value
   const { status } = await usePostApi(
     '/chats/highlight-message',
@@ -165,5 +182,9 @@ const highlightSelectedText = () => {
 
 .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
   border-radius: 0.25rem;
+}
+
+.highlight {
+  background-color: rgb(104, 240, 20);
 }
 </style>

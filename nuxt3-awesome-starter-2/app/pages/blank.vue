@@ -1,20 +1,23 @@
-<script lang="ts" setup>
-definePageMeta({ layout: 'page' })
-useHead({ title: 'Blank Page' })
-</script>
-
 <template>
-  <LayoutPageWrapper>
-    <LayoutPageHeader>
-      <LayoutPageTitle text="Blank Page" class="capitalize" />
-    </LayoutPageHeader>
-    <LayoutPageSection>
-      <LayoutPageSectionTitle text="Section Title" />
-      <div>My Content</div>
-    </LayoutPageSection>
-    <LayoutPageSection>
-      <LayoutPageSectionTitle text="Another Section" />
-      <div>My Content</div>
-    </LayoutPageSection>
+  <LayoutPageWrapper class="flex">
+    <div v-for="mess in storageMessages" :key="mess.id">
+      <ChatMessage :message="mess"></ChatMessage>
+    </div>
   </LayoutPageWrapper>
 </template>
+<script lang="ts" setup>
+import type { InputMessage } from '../../types/conversation'
+
+definePageMeta({ layout: 'page' })
+useHead({ title: 'Storage' })
+const storageMessages = ref<InputMessage[]>([])
+onNuxtReady(async () => {
+  const { data } = await useGetApi<InputMessage[]>(
+    `/chats/get-storage-messages`,
+    { server: false },
+  )
+  if (data.value) {
+    storageMessages.value = data.value
+  }
+})
+</script>

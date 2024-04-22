@@ -73,6 +73,19 @@ namespace BookmarkWeb.API.Controllers
             }
         }
 
+        [HttpGet("get-storage-messages")]
+        [Authorize]
+        public async Task<IActionResult> GetStorageMessage()
+        {
+            try {
+                return Ok(await _chatsModel.GetStorageMessage());
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
+
         [HttpPost("delete-conversation/{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteConversation (string id)
@@ -108,6 +121,20 @@ namespace BookmarkWeb.API.Controllers
             try
             {
                 return Ok(await _chatsModel.Highlight(inputMessage));
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Error = e.Message });
+            }
+        }
+
+        [HttpPost("delete/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteStorageMessage (string id)
+        {
+            try
+            {
+                return Ok(await _chatsModel.DeleteStorageMessage(id));
             } 
             catch (Exception e)
             {

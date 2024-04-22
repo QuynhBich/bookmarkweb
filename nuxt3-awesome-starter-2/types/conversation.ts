@@ -5,6 +5,7 @@ export interface InputMessage {
   isNote: boolean
   note: string
   isNoted: boolean
+  updatedAt: Date | null
 }
 
 export interface InputBookmark {
